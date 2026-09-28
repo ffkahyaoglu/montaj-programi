@@ -465,7 +465,7 @@
     let currentSigRow = null;
     let currentUser = null;
     let currentCity = 'ankara';
-    let activeListenerRef = null; // Aktif Dinleyici Takibi
+    let activeListenerRef = null;
 
     const cityConfigs = {
         'ankara': {
@@ -801,17 +801,24 @@
         window.open(url, '_blank');
     }
 
-    /* DÜZELTİLMİŞ TARİH İZOLASYONLU DİNLENME MOTORU */
+    /* KESİN TARİH VE ŞEHİR AYRIMLI DİNLENME MOTORU */
     function attachLiveDatabaseListener() {
         const selectedDate = document.getElementById('dateInput').value;
         if (!selectedDate) return;
 
-        // Önceki aktif dinleyiciyi kesinlikle kapat
+        // Eski dinleyiciyi durdur
         if (activeListenerRef) {
             activeListenerRef.off();
         }
 
-        // Seçilen şehre VE seçilen tarihe özel path
+        // ÖNCE EKRAN VERİLERİNİ TAMAMEN SIFIRLA
+        document.getElementById('tableBody').innerHTML = '';
+        document.getElementById('plateInput').value = '';
+        document.getElementById('leaderInput').value = '';
+        document.getElementById('memberInput').value = '';
+        updateTitle();
+
+        // SEÇİLİ ŞEHİR VE TARİHE ÖZEL BULUT YOLU
         const path = `montaj_${currentCity}/${selectedDate}`;
         activeListenerRef = db.ref(path);
         
@@ -819,7 +826,7 @@
             const data = snapshot.val();
             document.getElementById('tableBody').innerHTML = '';
 
-            if (data && data.rows) {
+            if (data && data.rows && data.rows.length > 0) {
                 document.getElementById('plateInput').value = data.plate || '';
                 document.getElementById('leaderInput').value = data.leader || '';
                 document.getElementById('memberInput').value = data.member || '';
@@ -830,7 +837,7 @@
                 document.getElementById('leaderInput').value = '';
                 document.getElementById('memberInput').value = '';
                 updateTitle();
-                addRow();
+                addRow(); // Boş gün ise 1 adet varsayılan satır aç
             }
             updateFullMapRoute();
         });
