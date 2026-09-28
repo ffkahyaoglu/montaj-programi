@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anadolu Araç Yükleme & Montaj Programı (Faz 1.1)</title>
+    <title>Anadolu Araç Yükleme & Montaj Programı (Faz 1.1 - Tam Sütunlu)</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- SheetJS (Excel Çıktısı İçin) -->
@@ -27,11 +27,11 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 100%;
             margin: 0 auto;
         }
 
-        /* Üst Bar: Oturum Bilgisi */
+        /* Üst Bar: Oturum & Kayıt Takibi */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -102,7 +102,7 @@
             font-weight: 600;
         }
 
-        /* İşlem Butonları */
+        /* Aksiyon Butonları */
         .action-bar {
             background: white;
             padding: 10px 20px;
@@ -135,16 +135,16 @@
         /* Ana Düzen (Tablo ve Harita) */
         .main-layout {
             display: grid;
-            grid-template-columns: 1fr 420px;
+            grid-template-columns: 1fr 380px;
             gap: 15px;
             margin-top: 15px;
         }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 1200px) {
             .main-layout { grid-template-columns: 1fr; }
         }
 
-        /* Tablo Tasarımı */
+        /* Genişletilmiş Tablo Tasarımı */
         .table-container {
             background: white;
             border-radius: 8px;
@@ -155,20 +155,21 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            white-space: nowrap;
         }
 
         th {
             background: #0f172a;
             color: white;
-            padding: 10px 8px;
+            padding: 10px 6px;
             text-align: left;
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
 
         td {
-            padding: 6px 8px;
+            padding: 4px 6px;
             border-bottom: 1px solid var(--border);
             vertical-align: middle;
         }
@@ -176,15 +177,17 @@
         tr:nth-child(even) { background-color: #f8fafc; }
 
         input.cell-input {
-            width: 95%;
-            padding: 6px;
+            width: 100%;
+            min-width: 80px;
+            padding: 5px;
             border: 1px solid #cbd5e1;
             border-radius: 4px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            box-sizing: border-box;
         }
 
         input.cell-customer {
-            background-color: #fef08a; /* Orijinal Sarı Vurgu */
+            background-color: #fef08a; /* Sarı Vurgu */
             font-weight: bold;
             color: #0f172a;
         }
@@ -195,7 +198,9 @@
             border-radius: 8px;
             padding: 10px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            height: 520px;
+            height: 550px;
+            position: sticky;
+            top: 15px;
         }
 
         #map {
@@ -229,7 +234,7 @@
         </div>
     </div>
 
-    <!-- Bilgi Form Kartı (Orijinal Başlıklar) -->
+    <!-- Bilgi Form Kartı -->
     <div class="info-card">
         <div class="info-group">
             <label>Plaka:</label>
@@ -260,18 +265,29 @@
 
     <!-- Ana İçerik -->
     <div class="main-layout">
-        <!-- Orijinal Sütun Yapısına Sahip Tablo -->
+        <!-- İstenen Tüm Sütun Başlıklarını İçeren Tablo -->
         <div class="table-container">
             <table id="programTable">
                 <thead>
                     <tr>
-                        <th style="width: 30px;">#</th>
-                        <th>Sipariş No</th>
-                        <th>Müşteri Adı</th>
-                        <th>Telefon</th>
-                        <th>Adres / İlçe</th>
-                        <th>Montaj / Ürün Notu</th>
-                        <th style="width: 35px;">Sil</th>
+                        <th style="width: 25px;">#</th>
+                        <th style="min-width: 90px;">Sipariş No</th>
+                        <th style="min-width: 110px;">Telefon</th>
+                        <th style="min-width: 140px;">Müşteri Adı</th>
+                        <th style="min-width: 70px;">Saat</th>
+                        <th style="min-width: 90px;">Stok Kodu</th>
+                        <th style="min-width: 120px;">Stok Adı</th>
+                        <th style="min-width: 90px;">Konfig Kodu</th>
+                        <th style="min-width: 90px;">Konfig</th>
+                        <th style="min-width: 60px;">Miktar</th>
+                        <th style="min-width: 60px;">Paket</th>
+                        <th style="min-width: 60px;">Hacim</th>
+                        <th style="min-width: 150px;">Adres</th>
+                        <th style="min-width: 130px;">Açıklama</th>
+                        <th style="min-width: 70px;">RTT</th>
+                        <th style="min-width: 120px;">Satış Temsilcisi</th>
+                        <th style="min-width: 90px;">Durum</th>
+                        <th style="width: 30px;">Sil</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -323,7 +339,7 @@
         }
     }
 
-    // KESİN 7 SATIR SINIRLI MÜŞTERİ EKLEME
+    // KESİN 7 SATIR SINIRLI VE 16 SÜTUNLU MÜŞTERİ EKLEME
     function addRow(data = {}) {
         const tbody = document.getElementById('tableBody');
         const currentCount = tbody.getElementsByTagName('tr').length;
@@ -338,10 +354,21 @@
         tr.innerHTML = `
             <td><strong>${currentCount + 1}</strong></td>
             <td><input type="text" class="cell-input" value="${data.orderNo || ''}" placeholder="Sipariş No"></td>
-            <td><input type="text" class="cell-input cell-customer" value="${data.customer || ''}" placeholder="Müşteri Adı"></td>
             <td><input type="text" class="cell-input" value="${data.phone || ''}" placeholder="Telefon"></td>
-            <td><input type="text" class="cell-input" value="${data.address || ''}" placeholder="Adres / İlçe" onchange="geocodeRow(this)"></td>
-            <td><input type="text" class="cell-input" value="${data.note || ''}" placeholder="Montaj notu"></td>
+            <td><input type="text" class="cell-input cell-customer" value="${data.customer || ''}" placeholder="Müşteri Adı"></td>
+            <td><input type="text" class="cell-input" value="${data.time || ''}" placeholder="Saat"></td>
+            <td><input type="text" class="cell-input" value="${data.stockCode || ''}" placeholder="Stok Kodu"></td>
+            <td><input type="text" class="cell-input" value="${data.stockName || ''}" placeholder="Stok Adı"></td>
+            <td><input type="text" class="cell-input" value="${data.configCode || ''}" placeholder="Konfig Kodu"></td>
+            <td><input type="text" class="cell-input" value="${data.config || ''}" placeholder="Konfig"></td>
+            <td><input type="text" class="cell-input" value="${data.qty || ''}" placeholder="Miktar"></td>
+            <td><input type="text" class="cell-input" value="${data.pkg || ''}" placeholder="Paket"></td>
+            <td><input type="text" class="cell-input" value="${data.volume || ''}" placeholder="Hacim"></td>
+            <td><input type="text" class="cell-input" value="${data.address || ''}" placeholder="Adres" onchange="geocodeRow(this)"></td>
+            <td><input type="text" class="cell-input" value="${data.desc || ''}" placeholder="Açıklama"></td>
+            <td><input type="text" class="cell-input" value="${data.rtt || ''}" placeholder="RTT"></td>
+            <td><input type="text" class="cell-input" value="${data.salesRep || ''}" placeholder="Satış Temsilcisi"></td>
+            <td><input type="text" class="cell-input" value="${data.status || ''}" placeholder="Durum"></td>
             <td><button class="btn btn-danger" style="padding: 2px 6px;" onclick="deleteRow(this)">X</button></td>
         `;
 
@@ -405,10 +432,21 @@
             const inputs = tr.querySelectorAll('input');
             rows.push({
                 orderNo: inputs[0].value,
-                customer: inputs[1].value,
-                phone: inputs[2].value,
-                address: inputs[3].value,
-                note: inputs[4].value
+                phone: inputs[1].value,
+                customer: inputs[2].value,
+                time: inputs[3].value,
+                stockCode: inputs[4].value,
+                stockName: inputs[5].value,
+                configCode: inputs[6].value,
+                config: inputs[7].value,
+                qty: inputs[8].value,
+                pkg: inputs[9].value,
+                volume: inputs[10].value,
+                address: inputs[11].value,
+                desc: inputs[12].value,
+                rtt: inputs[13].value,
+                salesRep: inputs[14].value,
+                status: inputs[15].value
             });
         });
 
@@ -426,7 +464,7 @@
         alert(`✅ ${selectedDate} tarihli program başarıyla kaydedildi!`);
     }
 
-    // BİREBİR EXCEL (XLSX) DIŞA AKTARIMI
+    // İSTENEN TÜM SÜTUNLARI İÇEREN EXCEL (XLSX) DIŞA AKTARIMI
     function exportToExcel() {
         const plate = document.getElementById('plateInput').value || 'PLAKASIZ';
         const date = document.getElementById('dateInput').value;
@@ -438,7 +476,11 @@
             ["Plaka:", plate, "Tarih:", date],
             ["Takım Lideri:", leader, "Üye:", member],
             [],
-            ["Sıra", "Sipariş No", "Müşteri Adı", "Telefon", "Adres / İlçe", "Montaj / Ürün Notu"]
+            [
+                "Sıra", "Sipariş No", "Telefon", "Müşteri Adı", "Saat", 
+                "Stok Kodu", "Stok Adı", "Konfig Kodu", "Konfig", "Miktar", 
+                "Paket", "Hacim", "Adres", "Açıklama", "RTT", "Satış Temsilcisi", "Durum"
+            ]
         ];
 
         document.querySelectorAll('#tableBody tr').forEach((tr, index) => {
@@ -449,7 +491,18 @@
                 inputs[1].value,
                 inputs[2].value,
                 inputs[3].value,
-                inputs[4].value
+                inputs[4].value,
+                inputs[5].value,
+                inputs[6].value,
+                inputs[7].value,
+                inputs[8].value,
+                inputs[9].value,
+                inputs[10].value,
+                inputs[11].value,
+                inputs[12].value,
+                inputs[13].value,
+                inputs[14].value,
+                inputs[15].value
             ]);
         });
 
@@ -460,29 +513,28 @@
         XLSX.writeFile(wb, `${plate}_Montaj_Programi_${date}.xlsx`);
     }
 
-    // GOOGLE & YANDEX ROTA BUTONLARI (ONARILDI)
+    // GOOGLE & YANDEX ROTA BUTONLARI
     function openNav(type) {
         const addresses = [];
         document.querySelectorAll('#tableBody tr').forEach(tr => {
-            const addr = tr.querySelectorAll('input')[3].value.trim();
+            const inputs = tr.querySelectorAll('input');
+            const addr = inputs[11].value.trim(); // Adres sütunu (11. index)
             if (addr !== '') addresses.push(encodeURIComponent(addr));
         });
 
         if (addresses.length === 0) {
-            alert("⚠️ Lütfen önce en az bir müşteri için Adres / İlçe alanını doldurun!");
+            alert("⚠️ Lütfen önce en az bir müşteri için Adres alanını doldurun!");
             return;
         }
 
         let url = "";
         if (type === 'google') {
-            // Google Maps Çoklu Durak Formatı
             url = `https://www.google.com/maps/dir/?api=1&destination=${addresses[addresses.length - 1]}`;
             if (addresses.length > 1) {
                 const waypoints = addresses.slice(0, -1).join('|');
                 url += `&waypoints=${waypoints}`;
             }
         } else if (type === 'yandex') {
-            // Yandex Navigasyon Formatı
             url = `https://yandex.com.tr/harita/?rtext=${addresses.join('~')}&rtt=auto`;
         }
 
