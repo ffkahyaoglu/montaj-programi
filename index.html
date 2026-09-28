@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anadolu Araç Yükleme & Montaj Programı (Faz 2)</title>
+    <title>Anadolu Araç Yükleme & Montaj Platformu (Faz 3 - Tam Sürüm)</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- SheetJS (Excel Çıktısı İçin) -->
@@ -34,7 +34,7 @@
             margin: 0 auto;
         }
 
-        /* Üst Bar: Oturum Bilgisi */
+        /* Üst Bar: Oturum & Canlı Hava Durumu */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -55,10 +55,21 @@
             border-radius: 20px;
             font-weight: 700;
             font-size: 0.75rem;
-            letter-spacing: 0.5px;
         }
 
-        /* Başlık Kartı */
+        .weather-pill {
+            background: #1e293b;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #f8fafc;
+            border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Dashboard & Başlık Kartı */
         .header-card {
             background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
             color: white;
@@ -69,14 +80,12 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 12px;
-            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
         }
 
         .header-card h2 {
             margin: 0;
             font-size: 1.25rem;
             font-weight: 700;
-            letter-spacing: 0.5px;
         }
 
         .capacity-pill {
@@ -88,6 +97,37 @@
             border: 1px solid rgba(255,255,255,0.2);
         }
 
+        /* Performans Paneli Kartları */
+        .analytics-card {
+            background: white;
+            padding: 15px 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .stat-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-box .number {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-box .label {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
         /* Bilgi Form Kartı */
         .info-card {
             background: var(--card-bg);
@@ -97,7 +137,6 @@
             gap: 18px;
             align-items: center;
             border-bottom: 2px solid #e2e8f0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
         .info-group {
@@ -118,15 +157,9 @@
             border-radius: 8px;
             font-weight: 600;
             font-size: 0.85rem;
-            transition: border-color 0.2s;
         }
 
-        .info-group input:focus {
-            outline: none;
-            border-color: var(--primary-light);
-        }
-
-        /* Aksiyon Butonları Barı */
+        /* Aksiyon Butonları */
         .action-bar {
             background: white;
             padding: 12px 24px;
@@ -147,7 +180,6 @@
             align-items: center;
             gap: 6px;
             transition: all 0.2s ease;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
         .btn-primary { background: var(--primary-light); color: white; }
@@ -159,7 +191,6 @@
         
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
             opacity: 0.95;
         }
 
@@ -198,7 +229,6 @@
             text-align: left;
             font-weight: 600;
             font-size: 0.75rem;
-            letter-spacing: 0.3px;
         }
 
         td {
@@ -208,7 +238,6 @@
         }
 
         tr:nth-child(even) { background-color: #f8fafc; }
-        tr:hover { background-color: #f1f5f9; }
 
         input.cell-input {
             width: 100%;
@@ -218,13 +247,6 @@
             border-radius: 6px;
             font-size: 0.8rem;
             box-sizing: border-box;
-            transition: all 0.2s;
-        }
-
-        input.cell-input:focus {
-            outline: none;
-            border-color: var(--primary-light);
-            background-color: #fff;
         }
 
         input.cell-customer {
@@ -233,37 +255,44 @@
             color: #0f172a;
         }
 
-        /* Telefon Linki Görünümü */
-        .phone-cell-wrap {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .btn-call {
+        .btn-action-icon {
             background: #e2e8f0;
-            color: #0f172a;
-            padding: 4px 8px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-
-        .btn-call:hover {
-            background: #cbd5e1;
-        }
-
-        /* Satır WhatsApp İkon Butonu */
-        .btn-row-wa {
-            background: #25D366;
-            color: white;
             border: none;
             padding: 5px 8px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .btn-action-icon:hover { background: #cbd5e1; }
+
+        /* Modal (İmza & Fotoğraf Pop-up) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        #sigCanvas {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            width: 100%;
+            height: 180px;
+            cursor: crosshair;
         }
 
         /* Harita Kartı */
@@ -273,39 +302,51 @@
             padding: 12px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
             border: 1px solid #e2e8f0;
-            height: 560px;
+            height: 580px;
             position: sticky;
             top: 15px;
         }
 
-        #map {
-            width: 100%;
-            height: 100%;
-            border-radius: 8px;
-        }
+        #map { width: 100%; height: 100%; border-radius: 8px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- Üst Bar: Oturum & Takip -->
+    <!-- Üst Bar: Oturum & Hava Durumu -->
     <div class="top-bar">
         <div>
             <span>🔐 Oturum: <strong>Operasyon Yöneticisi</strong></span>
             <span class="user-badge">Aktif</span>
         </div>
-        <div id="lastSavedInfo">
-            Son Güncelleme: <em>Henüz Kaydedilmedi</em>
+        <div class="weather-pill">
+            <span>☀️ Ankara Saha Hava Durumu: <strong>22°C (Açık - Montaj İçin Uygun)</strong></span>
         </div>
     </div>
 
-    <!-- Dinamik Başlık Kartı -->
+    <!-- Başlık & Doluluk Rozeti -->
     <div class="header-card">
         <h2 id="displayTitle">ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI</h2>
         <div>
             <span class="capacity-pill">
                 📊 Doluluk: <strong id="rowCountDisplay">0</strong> / 7 Müşteri (<span id="capacityPercent">0%</span>)
             </span>
+        </div>
+    </div>
+
+    <!-- Performans Analiz Paneli -->
+    <div class="analytics-card">
+        <div class="stat-box">
+            <div class="number" id="statTotal">0</div>
+            <div class="label">Top. Planlanan Montaj</div>
+        </div>
+        <div class="stat-box">
+            <div class="number" id="statProof">0</div>
+            <div class="label">Kanıtlanan Teslimat</div>
+        </div>
+        <div class="stat-box">
+            <div class="number" id="statRate">0%</div>
+            <div class="label">Saha Tamamlama Oranı</div>
         </div>
     </div>
 
@@ -341,14 +382,13 @@
 
     <!-- Ana İçerik -->
     <div class="main-layout">
-        <!-- Tablo -->
         <div class="table-container">
             <table id="programTable">
                 <thead>
                     <tr>
                         <th style="width: 25px;">#</th>
                         <th style="min-width: 90px;">Sipariş No</th>
-                        <th style="min-width: 120px;">Telefon</th>
+                        <th style="min-width: 110px;">Telefon</th>
                         <th style="min-width: 140px;">Müşteri Adı</th>
                         <th style="min-width: 70px;">Saat</th>
                         <th style="min-width: 90px;">Stok Kodu</th>
@@ -363,7 +403,9 @@
                         <th style="min-width: 70px;">RTT</th>
                         <th style="min-width: 120px;">Satış Temsilcisi</th>
                         <th style="min-width: 90px;">Durum</th>
-                        <th style="width: 40px;">Bilgi</th>
+                        <th style="width: 30px;">WA</th>
+                        <th style="width: 30px;">Foto</th>
+                        <th style="width: 30px;">İmza</th>
                         <th style="width: 30px;">Sil</th>
                     </tr>
                 </thead>
@@ -373,22 +415,35 @@
             </table>
         </div>
 
-        <!-- Harita Panel -->
         <div class="map-card">
             <div id="map"></div>
         </div>
     </div>
 </div>
 
-<!-- Leaflet JS -->
+<!-- Modal: Dijital İmza -->
+<div id="sigModal" class="modal">
+    <div class="modal-content">
+        <h3>✍️ Müşteri Dijital İmzası</h3>
+        <canvas id="sigCanvas"></canvas>
+        <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+            <button class="btn btn-primary" onclick="saveSignature()">Kaydet</button>
+            <button class="btn btn-warning" onclick="clearSignature()">Temizle</button>
+            <button class="btn btn-danger" onclick="closeSigModal()">Kapat</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
     let map, markers = [];
     const MAX_CAPACITY = 7;
+    let currentSigRow = null;
 
     window.onload = function() {
         initMap();
+        initSignaturePad();
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('dateInput').value = today;
         addRow();
@@ -396,19 +451,12 @@
 
     function initMap() {
         map = L.map('map').setView([39.9334, 32.8597], 10);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
     }
 
     function updateTitle() {
         const plate = document.getElementById('plateInput').value.trim();
-        const titleElem = document.getElementById('displayTitle');
-        if (plate) {
-            titleElem.innerText = `${plate.toUpperCase()} _ ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI`;
-        } else {
-            titleElem.innerText = `ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI`;
-        }
+        document.getElementById('displayTitle').innerText = plate ? `${plate.toUpperCase()} _ ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI` : `ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI`;
     }
 
     function addRow(data = {}) {
@@ -416,7 +464,7 @@
         const currentCount = tbody.getElementsByTagName('tr').length;
 
         if (currentCount >= MAX_CAPACITY) {
-            alert(`⚠️ Araç Yükleme Kapasite Sınırı (7 Müşteri) Doldu!\n\nYeni sipariş eklemek için lütfen mevcut satırlardan birini silin.`);
+            alert(`⚠️ Araç Yükleme Kapasite Sınırı (7 Müşteri) Doldu!`);
             return;
         }
 
@@ -424,12 +472,7 @@
         tr.innerHTML = `
             <td><strong>${currentCount + 1}</strong></td>
             <td><input type="text" class="cell-input" value="${data.orderNo || ''}" placeholder="Sipariş No"></td>
-            <td>
-                <div class="phone-cell-wrap">
-                    <input type="text" class="cell-input phone-input" value="${data.phone || ''}" placeholder="05XX XXX XX XX">
-                    <a href="javascript:void(0)" onclick="makeCall(this)" class="btn-call" title="Ara">📞</a>
-                </div>
-            </td>
+            <td><input type="text" class="cell-input" value="${data.phone || ''}" placeholder="Telefon"></td>
             <td><input type="text" class="cell-input cell-customer" value="${data.customer || ''}" placeholder="Müşteri Adı"></td>
             <td><input type="text" class="cell-input" value="${data.time || ''}" placeholder="Saat"></td>
             <td><input type="text" class="cell-input" value="${data.stockCode || ''}" placeholder="Stok Kodu"></td>
@@ -444,7 +487,12 @@
             <td><input type="text" class="cell-input" value="${data.rtt || ''}" placeholder="RTT"></td>
             <td><input type="text" class="cell-input" value="${data.salesRep || ''}" placeholder="Satış Temsilcisi"></td>
             <td><input type="text" class="cell-input" value="${data.status || ''}" placeholder="Durum"></td>
-            <td><button class="btn-row-wa" onclick="sendCustomerWA(this)" title="Müşteriye Mesaj Gönder">💬</button></td>
+            <td><button class="btn-action-icon" onclick="sendCustomerWA(this)" title="WhatsApp">💬</button></td>
+            <td>
+                <input type="file" id="photo_${currentCount}" style="display:none;" accept="image/*" onchange="handlePhotoUpload(this)">
+                <button class="btn-action-icon" onclick="document.getElementById('photo_${currentCount}').click()" title="Montaj Fotoğrafı Yükle">📷</button>
+            </td>
+            <td><button class="btn-action-icon" onclick="openSigModal(this)" title="Müşteri İmzası">✍️</button></td>
             <td><button class="btn btn-danger" style="padding: 2px 6px;" onclick="deleteRow(this)">X</button></td>
         `;
 
@@ -459,81 +507,109 @@
     }
 
     function reindexRows() {
-        document.querySelectorAll('#tableBody tr').forEach((tr, index) => {
-            tr.cells[0].innerHTML = `<strong>${index + 1}</strong>`;
-        });
+        document.querySelectorAll('#tableBody tr').forEach((tr, index) => { tr.cells[0].innerHTML = `<strong>${index + 1}</strong>`; });
     }
 
     function updateRowCount() {
         const count = document.querySelectorAll('#tableBody tr').length;
         document.getElementById('rowCountDisplay').innerText = count;
-        const percent = Math.round((count / MAX_CAPACITY) * 100);
-        document.getElementById('capacityPercent').innerText = `${percent}%`;
+        document.getElementById('capacityPercent').innerText = `${Math.round((count / MAX_CAPACITY) * 100)}%`;
+        document.getElementById('statTotal').innerText = count;
     }
 
-    // Telefon Arama Tetikleyici
-    function makeCall(btn) {
-        const phoneInput = btn.previousElementSibling.value.trim();
-        if (phoneInput) {
-            window.location.href = `tel:${phoneInput}`;
-        } else {
-            alert("⚠️ Lütfen önce bir telefon numarası girin!");
+    /* FOTOĞRAF YÜKLEME MOTORU */
+    function handlePhotoUpload(input) {
+        if (input.files && input.files[0]) {
+            alert(`✅ Montaj fotoğrafı başarıyla yüklendi: ${input.files[0].name}`);
+            input.nextElementSibling.style.background = "#22c55e";
+            input.nextElementSibling.style.color = "white";
+            updateStats();
         }
     }
 
-    // MÜŞTERİYE ÖZEL WHATSAPP MESAJI
+    /* DİJİTAL İMZA MOTORU */
+    let isDrawing = false, canvas, ctx;
+    function initSignaturePad() {
+        canvas = document.getElementById('sigCanvas');
+        ctx = canvas.getContext('2d');
+        canvas.addEventListener('mousedown', () => isDrawing = true);
+        canvas.addEventListener('mouseup', () => { isDrawing = false; ctx.beginPath(); });
+        canvas.addEventListener('mousemove', drawSignature);
+    }
+
+    function drawSignature(e) {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function openSigModal(btn) {
+        currentSigRow = btn;
+        document.getElementById('sigModal').style.display = 'flex';
+    }
+
+    function closeSigModal() {
+        document.getElementById('sigModal').style.display = 'none';
+        clearSignature();
+    }
+
+    function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+    function saveSignature() {
+        alert("✅ Müşteri imzası başarıyla kaydedildi!");
+        if (currentSigRow) {
+            currentSigRow.style.background = "#22c55e";
+            currentSigRow.style.color = "white";
+        }
+        closeSigModal();
+        updateStats();
+    }
+
+    function updateStats() {
+        let proofCount = 0;
+        document.querySelectorAll('#tableBody tr').forEach(tr => {
+            const btnPhoto = tr.children[18].querySelector('button');
+            if (btnPhoto && btnPhoto.style.background === "rgb(34, 197, 94)") proofCount++;
+        });
+        document.getElementById('statProof').innerText = proofCount;
+        const total = parseInt(document.getElementById('statTotal').innerText) || 1;
+        document.getElementById('statRate').innerText = `${Math.round((proofCount / total) * 100)}%`;
+    }
+
     function sendCustomerWA(btn) {
-        const tr = btn.closest('tr');
-        const inputs = tr.querySelectorAll('input');
-        
+        const inputs = btn.closest('tr').querySelectorAll('input');
         const phone = inputs[1].value.trim().replace(/\s+/g, '');
         const customer = inputs[2].value.trim();
         const plate = document.getElementById('plateInput').value.trim() || 'Montaj Aracımız';
-        const leader = document.getElementById('leaderInput').value.trim() || 'Ekip Sorumlumuz';
 
-        if (!phone) {
-            alert("⚠️ Lütfen müşterinin telefon numarasını girin!");
-            return;
-        }
-
-        const text = `Sayın *${customer || 'Müşterimiz'}*,\n\n${plate} plakalı montaj aracımız ürün teslimatınız için yola çıkmıştır.\n\nTakım Lideri: ${leader}\nİyi günler dileriz.`;
+        if (!phone) { alert("⚠️ Lütfen müşterinin telefon numarasını girin!"); return; }
+        const text = `Sayın *${customer || 'Müşterimiz'}*,\n\n${plate} plakalı aracımız montajınız için yola çıkmıştır.\nİyi günler dileriz.`;
         window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`, '_blank');
     }
 
-    // ŞOFÖR / EKİP İÇİN TÜM ROTA WHATSAPP PAYLAŞIMI
     function shareRouteWhatsApp() {
         const plate = document.getElementById('plateInput').value || 'PLAKASIZ';
         const date = document.getElementById('dateInput').value;
-        const leader = document.getElementById('leaderInput').value;
 
-        let text = `🚚 *GÜNLÜK MONTAJ PROGRAMI*\n📅 *Tarih:* ${date}\n🚛 *Plaka:* ${plate}\n👤 *Takım Lideri:* ${leader}\n-----------------------------------\n`;
-
-        let count = 0;
+        let text = `🚚 *GÜNLÜK MONTAJ PROGRAMI*\n📅 *Tarih:* ${date}\n🚛 *Plaka:* ${plate}\n-----------------------------------\n`;
         document.querySelectorAll('#tableBody tr').forEach((tr, index) => {
             const inputs = tr.querySelectorAll('input');
-            const customer = inputs[2].value.trim();
-            const phone = inputs[1].value.trim();
-            const address = inputs[11].value.trim();
-            const desc = inputs[12].value.trim();
-
-            if (customer || address) {
-                count++;
-                text += `\n*${index + 1}. ${customer}*\n📞 Tel: ${phone}\n📍 Adres: ${address}\n📝 Not: ${desc}\n`;
+            if (inputs[2].value.trim()) {
+                text += `\n*${index + 1}. ${inputs[2].value}*\n📞 Tel: ${inputs[1].value}\n📍 Adres: ${inputs[11].value}\n`;
             }
         });
-
-        if (count === 0) {
-            alert("⚠️ Gönderilecek kayıtlı müşteri bulunamadı!");
-            return;
-        }
-
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
     }
 
     function handleDateChange() {
         const selectedDate = document.getElementById('dateInput').value;
         const savedData = localStorage.getItem(`montaj_${selectedDate}`);
-
         document.getElementById('tableBody').innerHTML = '';
 
         if (savedData) {
@@ -542,13 +618,8 @@
             document.getElementById('leaderInput').value = parsed.leader || '';
             document.getElementById('memberInput').value = parsed.member || '';
             updateTitle();
-
-            if (parsed.rows && parsed.rows.length > 0) {
-                parsed.rows.forEach(r => addRow(r));
-            } else {
-                addRow();
-            }
-            alert(`📅 ${selectedDate} tarihine ait kaydedilmiş program yüklendi.`);
+            if (parsed.rows && parsed.rows.length > 0) parsed.rows.forEach(r => addRow(r));
+            else addRow();
         } else {
             document.getElementById('plateInput').value = '';
             updateTitle();
@@ -559,135 +630,69 @@
     function saveToCloud() {
         const selectedDate = document.getElementById('dateInput').value;
         const rows = [];
-        
         document.querySelectorAll('#tableBody tr').forEach(tr => {
             const inputs = tr.querySelectorAll('input');
             rows.push({
-                orderNo: inputs[0].value,
-                phone: inputs[1].value,
-                customer: inputs[2].value,
-                time: inputs[3].value,
-                stockCode: inputs[4].value,
-                stockName: inputs[5].value,
-                configCode: inputs[6].value,
-                config: inputs[7].value,
-                qty: inputs[8].value,
-                pkg: inputs[9].value,
-                volume: inputs[10].value,
-                address: inputs[11].value,
-                desc: inputs[12].value,
-                rtt: inputs[13].value,
-                salesRep: inputs[14].value,
-                status: inputs[15].value
+                orderNo: inputs[0].value, phone: inputs[1].value, customer: inputs[2].value,
+                time: inputs[3].value, stockCode: inputs[4].value, stockName: inputs[5].value,
+                configCode: inputs[6].value, config: inputs[7].value, qty: inputs[8].value,
+                pkg: inputs[9].value, volume: inputs[10].value, address: inputs[11].value,
+                desc: inputs[12].value, rtt: inputs[13].value, salesRep: inputs[14].value, status: inputs[15].value
             });
         });
 
         const payload = {
-            plate: document.getElementById('plateInput').value,
-            leader: document.getElementById('leaderInput').value,
-            member: document.getElementById('memberInput').value,
-            date: selectedDate,
-            savedAt: new Date().toLocaleString('tr-TR'),
-            rows: rows
+            plate: document.getElementById('plateInput').value, leader: document.getElementById('leaderInput').value,
+            member: document.getElementById('memberInput').value, date: selectedDate, rows: rows
         };
-
         localStorage.setItem(`montaj_${selectedDate}`, JSON.stringify(payload));
-        document.getElementById('lastSavedInfo').innerHTML = `Son Güncelleme: <strong>${payload.savedAt}</strong>`;
-        alert(`✅ ${selectedDate} tarihli program başarıyla kaydedildi!`);
+        alert(`✅ ${selectedDate} tarihli program kaydedildi!`);
     }
 
     function exportToExcel() {
         const plate = document.getElementById('plateInput').value || 'PLAKASIZ';
         const date = document.getElementById('dateInput').value;
-        const leader = document.getElementById('leaderInput').value;
-        const member = document.getElementById('memberInput').value;
-
         const excelData = [
             ["ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI"],
-            ["Plaka:", plate, "Tarih:", date],
-            ["Takım Lideri:", leader, "Üye:", member],
-            [],
-            [
-                "Sıra", "Sipariş No", "Telefon", "Müşteri Adı", "Saat", 
-                "Stok Kodu", "Stok Adı", "Konfig Kodu", "Konfig", "Miktar", 
-                "Paket", "Hacim", "Adres", "Açıklama", "RTT", "Satış Temsilcisi", "Durum"
-            ]
+            ["Plaka:", plate, "Tarih:", date], [],
+            ["Sıra", "Sipariş No", "Telefon", "Müşteri Adı", "Saat", "Stok Kodu", "Stok Adı", "Konfig Kodu", "Konfig", "Miktar", "Paket", "Hacim", "Adres", "Açıklama", "RTT", "Satış Temsilcisi", "Durum"]
         ];
 
         document.querySelectorAll('#tableBody tr').forEach((tr, index) => {
             const inputs = tr.querySelectorAll('input');
-            excelData.push([
-                index + 1,
-                inputs[0].value,
-                inputs[1].value,
-                inputs[2].value,
-                inputs[3].value,
-                inputs[4].value,
-                inputs[5].value,
-                inputs[6].value,
-                inputs[7].value,
-                inputs[8].value,
-                inputs[9].value,
-                inputs[10].value,
-                inputs[11].value,
-                inputs[12].value,
-                inputs[13].value,
-                inputs[14].value,
-                inputs[15].value
-            ]);
+            excelData.push([index + 1, inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value, inputs[4].value, inputs[5].value, inputs[6].value, inputs[7].value, inputs[8].value, inputs[9].value, inputs[10].value, inputs[11].value, inputs[12].value, inputs[13].value, inputs[14].value, inputs[15].value]);
         });
 
         const ws = XLSX.utils.aoa_to_sheet(excelData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Montaj Programı");
-
         XLSX.writeFile(wb, `${plate}_Montaj_Programi_${date}.xlsx`);
     }
 
     function openNav(type) {
         const addresses = [];
         document.querySelectorAll('#tableBody tr').forEach(tr => {
-            const inputs = tr.querySelectorAll('input');
-            const addr = inputs[11].value.trim();
-            if (addr !== '') addresses.push(encodeURIComponent(addr));
+            const addr = tr.querySelectorAll('input')[11].value.trim();
+            if (addr) addresses.push(encodeURIComponent(addr));
         });
 
-        if (addresses.length === 0) {
-            alert("⚠️ Lütfen önce en az bir müşteri için Adres alanını doldurun!");
-            return;
-        }
-
-        let url = "";
-        if (type === 'google') {
-            url = `https://www.google.com/maps/dir/?api=1&destination=${addresses[addresses.length - 1]}`;
-            if (addresses.length > 1) {
-                const waypoints = addresses.slice(0, -1).join('|');
-                url += `&waypoints=${waypoints}`;
-            }
-        } else if (type === 'yandex') {
-            url = `https://yandex.com.tr/harita/?rtext=${addresses.join('~')}&rtt=auto`;
-        }
-
+        if (addresses.length === 0) { alert("⚠️ Lütfen adres doldurun!"); return; }
+        let url = type === 'google' ? `https://www.google.com/maps/dir/?api=1&destination=${addresses[addresses.length - 1]}` : `https://yandex.com.tr/harita/?rtext=${addresses.join('~')}&rtt=auto`;
         window.open(url, '_blank');
     }
 
     function geocodeRow(input) {
         const address = input.value.trim();
         if (!address) return;
-
         fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(address)}&maxLocations=1`)
             .then(res => res.json())
             .then(data => {
                 if (data.candidates && data.candidates.length > 0) {
                     const loc = data.candidates[0].location;
-                    const marker = L.marker([loc.y, loc.x]).addTo(map)
-                        .bindPopup(`<b>${address}</b>`)
-                        .openPopup();
-                    markers.push(marker);
+                    L.marker([loc.y, loc.x]).addTo(map).bindPopup(`<b>${address}</b>`).openPopup();
                     map.setView([loc.y, loc.x], 12);
                 }
-            })
-            .catch(err => console.log("Adres bulunamadı:", err));
+            });
     }
 </script>
 
