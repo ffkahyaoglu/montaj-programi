@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- SheetJS -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Firebase SDK (v9 Compatibility Mode) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
@@ -44,9 +44,7 @@
             background-image: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.04) 0%, transparent 75%);
         }
 
-        /* -----------------------------------
-           ROLEX STİLİ VIP LOGIN EKRANI
-        ----------------------------------- */
+        /* LOGIN EKRANI */
         #loginOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -64,7 +62,7 @@
             border: 1px solid var(--rolex-border);
             padding: 60px 48px;
             border-radius: 28px;
-            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9);
             width: 90%;
             max-width: 420px;
             text-align: center;
@@ -87,7 +85,6 @@
             color: #ffffff;
             margin: 0 0 4px 0;
             text-transform: uppercase;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
 
         .lazzoni-sub {
@@ -97,13 +94,9 @@
             text-transform: uppercase;
             margin-bottom: 45px;
             font-weight: 500;
-            opacity: 0.9;
         }
 
-        .input-group-pass {
-            position: relative;
-            width: 100%;
-        }
+        .input-group-pass { position: relative; width: 100%; }
 
         .login-input {
             width: 100%;
@@ -114,7 +107,6 @@
             border-radius: 14px;
             font-size: 0.9rem;
             color: #ffffff;
-            letter-spacing: 0.5px;
         }
 
         .login-input:focus {
@@ -125,572 +117,173 @@
         }
 
         .toggle-pass-btn {
-            position: absolute;
-            right: 16px;
-            top: 16px;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 1.1rem;
+            position: absolute; right: 16px; top: 16px;
+            background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem;
         }
 
         .login-btn {
-            width: 100%;
-            padding: 16px;
+            width: 100%; padding: 16px;
             background: linear-gradient(135deg, var(--rolex-gold) 0%, var(--rolex-gold-dark) 100%);
-            color: #06080c;
-            border: none;
-            border-radius: 14px;
-            font-weight: 700;
-            font-size: 0.82rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            cursor: pointer;
-            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2);
-            margin-top: 10px;
+            color: #06080c; border: none; border-radius: 14px; font-weight: 700;
+            font-size: 0.82rem; letter-spacing: 3px; text-transform: uppercase; cursor: pointer;
+            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2); margin-top: 10px;
         }
 
         .login-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 15px 35px rgba(212, 175, 55, 0.35);
             background: linear-gradient(135deg, var(--rolex-gold-light) 0%, var(--rolex-gold) 100%);
         }
 
-        /* -----------------------------------
-           ŞEHİR SEÇİM EKRANI (POST-LOGIN HUB)
-        ----------------------------------- */
+        /* ŞEHİR SEÇİM HUB EKRANI */
         #cityHubOverlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #0f1522 0%, #030406 100%);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 90000;
-            padding: 20px;
+            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 90000; padding: 20px;
         }
 
-        .hub-header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
+        .hub-header { text-align: center; margin-bottom: 50px; }
+        .hub-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; color: #ffffff; margin: 0 0 8px 0; letter-spacing: 4px; }
+        .hub-header p { color: var(--rolex-gold); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin: 0; }
 
-        .hub-header h2 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 2.2rem;
-            color: #ffffff;
-            margin: 0 0 8px 0;
-            letter-spacing: 4px;
-        }
-
-        .hub-header p {
-            color: var(--rolex-gold);
-            font-size: 0.8rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin: 0;
-        }
-
-        .city-cards-container {
-            display: flex;
-            gap: 40px;
-            max-width: 900px;
-            width: 100%;
-            justify-content: center;
-        }
-
-        .city-cards-container:hover .city-card {
-            opacity: 0.35;
-            filter: grayscale(60%) blur(1px);
-            transform: scale(0.97);
-        }
+        .city-cards-container { display: flex; gap: 40px; max-width: 900px; width: 100%; justify-content: center; }
+        .city-cards-container:hover .city-card { opacity: 0.35; filter: grayscale(60%) blur(1px); transform: scale(0.97); }
 
         .city-card {
-            background: rgba(13, 17, 26, 0.8);
-            border: 1px solid var(--rolex-border);
-            border-radius: 24px;
-            padding: 40px 30px;
-            flex: 1;
-            max-width: 380px;
-            text-align: center;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.7);
-            opacity: 1;
-            filter: none;
+            background: rgba(13, 17, 26, 0.8); border: 1px solid var(--rolex-border);
+            border-radius: 24px; padding: 40px 30px; flex: 1; max-width: 380px; text-align: center; cursor: pointer; position: relative; overflow: hidden;
         }
 
         .city-cards-container .city-card:hover {
-            opacity: 1 !important;
-            filter: none !important;
-            transform: scale(1.04) translateY(-8px) !important;
-            border-color: var(--rolex-gold);
-            box-shadow: 0 30px 70px rgba(212, 175, 55, 0.25);
+            opacity: 1 !important; filter: none !important; transform: scale(1.04) translateY(-8px) !important;
+            border-color: var(--rolex-gold); box-shadow: 0 30px 70px rgba(212, 175, 55, 0.25);
         }
 
         .city-map-svg {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 85%;
-            height: 85%;
-            opacity: 0.12;
-            pointer-events: none;
-            transition: all 0.5s ease;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 85%; height: 85%; opacity: 0.12; pointer-events: none; transition: all 0.5s ease;
         }
 
-        .city-card:hover .city-map-svg {
-            opacity: 0.28;
-            transform: translate(-50%, -50%) scale(1.1);
-        }
-
-        .city-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 2.4rem;
-            font-weight: 700;
-            letter-spacing: 6px;
-            color: #ffffff;
-            margin-bottom: 8px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .city-depot {
-            font-size: 0.75rem;
-            color: var(--rolex-gold);
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            position: relative;
-            z-index: 2;
-            margin-bottom: 25px;
-        }
+        .city-card:hover .city-map-svg { opacity: 0.28; transform: translate(-50%, -50%) scale(1.1); }
+        .city-title { font-family: 'Cormorant Garamond', serif; font-size: 2.4rem; font-weight: 700; letter-spacing: 6px; color: #ffffff; margin-bottom: 8px; position: relative; z-index: 2; }
+        .city-depot { font-size: 0.75rem; color: var(--rolex-gold); letter-spacing: 1.5px; text-transform: uppercase; position: relative; z-index: 2; margin-bottom: 25px; }
 
         .city-enter-btn {
-            display: inline-block;
-            padding: 10px 24px;
-            background: rgba(212, 175, 55, 0.1);
-            border: 1px solid var(--rolex-border);
-            color: var(--rolex-gold);
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            position: relative;
-            z-index: 2;
+            display: inline-block; padding: 10px 24px; background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--rolex-border); color: var(--rolex-gold); border-radius: 30px; font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; position: relative; z-index: 2;
         }
 
-        .city-card:hover .city-enter-btn {
-            background: var(--rolex-gold);
-            color: #06080c;
-        }
+        .city-card:hover .city-enter-btn { background: var(--rolex-gold); color: #06080c; }
 
-        /* -----------------------------------
-           ANA KOKPİT İÇERİĞİ
-        ----------------------------------- */
-        .app-container {
-            padding: 28px 36px;
-            max-width: 100%;
-            margin: 0 auto;
-            display: none;
-        }
+        /* ANA UYGULAMA */
+        .app-container { padding: 28px 36px; max-width: 100%; margin: 0 auto; display: none; }
 
         .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(13, 17, 26, 0.7);
-            backdrop-filter: blur(15px);
-            border: 1px solid var(--rolex-border);
-            color: var(--text-main);
-            padding: 16px 32px;
-            border-radius: 20px;
-            margin-bottom: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(13, 17, 26, 0.7); backdrop-filter: blur(15px); border: 1px solid var(--rolex-border);
+            color: var(--text-main); padding: 16px 32px; border-radius: 20px; margin-bottom: 24px;
         }
 
-        .brand-badge {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.3rem;
-            font-weight: 700;
-            letter-spacing: 4px;
-            color: var(--rolex-gold);
-            margin-right: 20px;
-        }
+        .brand-badge { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 700; letter-spacing: 4px; color: var(--rolex-gold); margin-right: 20px; }
+        .city-badge { background: rgba(212, 175, 55, 0.15); border: 1px solid var(--rolex-border); color: var(--rolex-gold-light); padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; margin-left: 10px; }
+        .sync-status-pill { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; margin-left: 10px; }
 
-        .city-badge {
-            background: rgba(212, 175, 55, 0.15);
-            border: 1px solid var(--rolex-border);
-            color: var(--rolex-gold-light);
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-left: 10px;
-        }
+        .btn-change-city { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px 14px; border-radius: 10px; font-size: 0.75rem; cursor: pointer; margin-left: 12px; }
+        .btn-change-city:hover { color: var(--rolex-gold); border-color: var(--rolex-gold); }
 
-        .sync-status-pill {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: var(--success);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            margin-left: 10px;
-        }
-
-        .btn-change-city {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-muted);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 6px 14px;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            margin-left: 12px;
-        }
-
-        .btn-change-city:hover {
-            color: var(--rolex-gold);
-            border-color: var(--rolex-gold);
-        }
-
-        .btn-logout {
-            background: rgba(239, 68, 68, 0.08);
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            padding: 6px 14px;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-left: 8px;
-        }
-
+        .btn-logout { background: rgba(239, 68, 68, 0.08); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); padding: 6px 14px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; cursor: pointer; margin-left: 8px; }
         .btn-logout:hover { background: var(--danger); color: white; }
 
         .header-card {
             background: linear-gradient(180deg, rgba(212, 175, 55, 0.05) 0%, rgba(13, 17, 26, 0.8) 100%);
-            border: 1px solid var(--rolex-border);
-            padding: 28px 36px;
-            border-radius: 24px 24px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
+            border: 1px solid var(--rolex-border); padding: 28px 36px; border-radius: 24px 24px 0 0;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
         }
 
-        .header-card h2 {
-            font-family: 'Cormorant Garamond', serif;
-            margin: 0;
-            font-size: 1.8rem;
-            font-weight: 600;
-            letter-spacing: 2px;
-            color: #ffffff;
-        }
+        .header-card h2 { font-family: 'Cormorant Garamond', serif; margin: 0; font-size: 1.8rem; font-weight: 600; letter-spacing: 2px; color: #ffffff; }
+        .capacity-pill { background: rgba(212, 175, 55, 0.08); color: var(--rolex-gold); padding: 8px 20px; border-radius: 30px; font-size: 0.82rem; border: 1px solid var(--rolex-border); font-weight: 600; }
 
-        .capacity-pill {
-            background: rgba(212, 175, 55, 0.08);
-            color: var(--rolex-gold);
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 0.82rem;
-            border: 1px solid var(--rolex-border);
-            font-weight: 600;
-        }
+        .folder-archive-card { background: var(--rolex-card); border-left: 1px solid var(--rolex-border); border-right: 1px solid var(--rolex-border); padding: 20px 36px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .folder-archive-title { font-size: 0.75rem; letter-spacing: 2px; color: var(--rolex-gold); text-transform: uppercase; font-weight: 600; margin-bottom: 16px; }
 
-        .folder-archive-card {
-            background: var(--rolex-card);
-            border-left: 1px solid var(--rolex-border);
-            border-right: 1px solid var(--rolex-border);
-            padding: 20px 36px;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-        }
+        .months-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
+        .month-folder { background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 10px 8px; text-align: center; cursor: pointer; font-size: 0.8rem; color: var(--text-muted); }
+        .month-folder:hover { background: rgba(212, 175, 55, 0.08); border-color: var(--rolex-gold); color: var(--rolex-gold); }
+        .month-folder.active { background: var(--rolex-gold); color: #06080c; font-weight: 700; }
 
-        .folder-archive-title {
-            font-size: 0.75rem;
-            letter-spacing: 2px;
-            color: var(--rolex-gold);
-            text-transform: uppercase;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-
-        .months-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 10px;
-        }
-
-        .month-folder {
-            background: rgba(255,255,255,0.015);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 12px;
-            padding: 10px 8px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        .month-folder:hover {
-            background: rgba(212, 175, 55, 0.08);
-            border-color: var(--rolex-gold);
-            color: var(--rolex-gold);
-        }
-
-        .month-folder.active {
-            background: var(--rolex-gold);
-            color: #06080c;
-            font-weight: 700;
-        }
-
-        .days-list-container {
-            margin-top: 16px;
-            padding: 16px;
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(212, 175, 55, 0.1);
-            border-radius: 14px;
-            display: none;
-        }
-
-        .day-excel-btn {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: var(--success);
-            padding: 7px 14px;
-            border-radius: 8px;
-            font-size: 0.78rem;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
+        .days-list-container { margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.4); border: 1px solid rgba(212, 175, 55, 0.1); border-radius: 14px; display: none; }
+        .day-excel-btn { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success); padding: 7px 14px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; font-weight: 600; }
         .day-excel-btn:hover { background: var(--success); color: #000; }
 
-        .info-card {
-            background: var(--rolex-card);
-            border-left: 1px solid var(--rolex-border);
-            border-right: 1px solid var(--rolex-border);
-            padding: 22px 36px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-        }
-
+        .info-card { background: var(--rolex-card); border-left: 1px solid var(--rolex-border); border-right: 1px solid var(--rolex-border); padding: 22px 36px; display: flex; flex-wrap: wrap; gap: 24px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.03); }
         .info-group { display: flex; align-items: center; gap: 12px; }
         .info-group label { font-weight: 500; font-size: 0.82rem; color: var(--text-muted); }
-        .info-group input {
-            padding: 10px 16px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            font-size: 0.88rem;
-            color: #fff;
-        }
-
+        .info-group input { padding: 10px 16px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; font-size: 0.88rem; color: #fff; }
         .info-group input:focus { outline: none; border-color: var(--rolex-gold); }
 
-        .action-bar {
-            background: var(--rolex-card);
-            border: 1px solid var(--rolex-border);
-            border-radius: 0 0 24px 24px;
-            padding: 18px 36px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
+        .action-bar { background: var(--rolex-card); border: 1px solid var(--rolex-border); border-radius: 0 0 24px 24px; padding: 18px 36px; display: flex; gap: 12px; flex-wrap: wrap; }
+        .btn { padding: 12px 22px; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 8px; letter-spacing: 1px; text-transform: uppercase; }
+        .btn-gold { background: linear-gradient(135deg, var(--rolex-gold) 0%, var(--rolex-gold-dark) 100%); color: #06080c; }
+        .btn-gold:hover { background: linear-gradient(135deg, var(--rolex-gold-light) 0%, var(--rolex-gold) 100%); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(212, 175, 55, 0.25); }
 
-        .btn {
-            padding: 12px 22px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.8rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .btn-gold {
-            background: linear-gradient(135deg, var(--rolex-gold) 0%, var(--rolex-gold-dark) 100%);
-            color: #06080c;
-        }
-        .btn-gold:hover {
-            background: linear-gradient(135deg, var(--rolex-gold-light) 0%, var(--rolex-gold) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.25);
-        }
-
-        .btn-dark {
-            background: rgba(255,255,255,0.03);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
+        .btn-dark { background: rgba(255,255,255,0.03); color: #fff; border: 1px solid rgba(255,255,255,0.08); }
         .btn-dark:hover { background: rgba(255,255,255,0.08); border-color: var(--rolex-gold); }
 
-        .btn-excel {
-            background: rgba(16, 185, 129, 0.12);
-            color: var(--success);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
+        .btn-excel { background: rgba(16, 185, 129, 0.12); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
         .btn-excel:hover { background: var(--success); color: #000; }
 
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 420px;
-            gap: 24px;
-            margin-top: 24px;
-        }
-
+        .main-layout { display: grid; grid-template-columns: 1fr 420px; gap: 24px; margin-top: 24px; }
         @media (max-width: 1200px) { .main-layout { grid-template-columns: 1fr; } }
 
-        .table-container {
-            background: var(--rolex-card);
-            border-radius: 24px;
-            border: 1px solid var(--rolex-border);
-            overflow-x: auto;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-        }
-
+        .table-container { background: var(--rolex-card); border-radius: 24px; border: 1px solid var(--rolex-border); overflow-x: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
         table { width: 100%; border-collapse: collapse; font-size: 0.82rem; white-space: nowrap; }
         
-        th {
-            background: #040508;
-            color: var(--rolex-gold);
-            padding: 18px 14px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.72rem;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            border-bottom: 1px solid var(--rolex-border);
-        }
-
+        th { background: #040508; color: var(--rolex-gold); padding: 18px 14px; text-align: left; font-weight: 600; font-size: 0.72rem; letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid var(--rolex-border); }
         td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.02); vertical-align: middle; }
         tr:hover { background-color: rgba(212, 175, 55, 0.02); }
 
-        input.cell-input {
-            width: 100%; min-width: 85px; padding: 8px 12px;
-            background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 8px; font-size: 0.82rem; color: #fff; box-sizing: border-box;
-        }
-
+        input.cell-input { width: 100%; min-width: 85px; padding: 8px 12px; background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; font-size: 0.82rem; color: #fff; box-sizing: border-box; }
         input.cell-input:focus { outline: none; border-color: var(--rolex-gold); box-shadow: 0 0 10px var(--rolex-glow); }
-
-        input.cell-customer {
-            background: rgba(212, 175, 55, 0.08);
-            border-color: var(--rolex-border);
-            color: var(--rolex-gold-light);
-            font-weight: 600;
-        }
+        input.cell-customer { background: rgba(212, 175, 55, 0.08); border-color: var(--rolex-border); color: var(--rolex-gold-light); font-weight: 600; }
 
         .phone-wrap { display: flex; align-items: center; gap: 6px; }
-        .btn-phone-call {
-            background: rgba(212, 175, 55, 0.05); color: var(--rolex-gold);
-            border: 1px solid var(--rolex-border); border-radius: 8px; padding: 5px 10px;
-            text-decoration: none; font-size: 0.75rem;
-        }
-
+        .btn-phone-call { background: rgba(212, 175, 55, 0.05); color: var(--rolex-gold); border: 1px solid var(--rolex-border); border-radius: 8px; padding: 5px 10px; text-decoration: none; font-size: 0.75rem; }
         .order-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px 4px; font-size: 0.8rem; }
         .order-btn:hover { color: var(--rolex-gold); }
 
-        .btn-action-icon {
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-            color: var(--text-main); padding: 7px 11px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
-        }
-
+        .btn-action-icon { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: var(--text-main); padding: 7px 11px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
         .btn-action-icon:hover { border-color: var(--rolex-gold); color: var(--rolex-gold); }
 
-        .map-card-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            position: sticky;
-            top: 24px;
-        }
-
-        .map-card {
-            background: var(--rolex-card);
-            border-radius: 24px;
-            padding: 14px;
-            border: 1px solid var(--rolex-border);
-            height: 500px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-        }
-
+        .map-card-wrapper { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 24px; }
+        .map-card { background: var(--rolex-card); border-radius: 24px; padding: 14px; border: 1px solid var(--rolex-border); height: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
         #map { width: 100%; height: 100%; border-radius: 16px; }
 
-        .route-stats-panel {
-            background: var(--rolex-card);
-            border: 1px solid var(--rolex-border);
-            border-radius: 20px;
-            padding: 18px 24px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            text-align: center;
-        }
+        .route-stats-panel { background: var(--rolex-card); border: 1px solid var(--rolex-border); border-radius: 20px; padding: 18px 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center; }
+        .stat-item .stat-value { font-size: 1.15rem; font-weight: 700; color: var(--rolex-gold); }
+        .stat-item .stat-label { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; margin-top: 4px; }
 
-        .stat-item .stat-value {
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: var(--rolex-gold);
-        }
-
-        .stat-item .stat-label {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
-
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 9999;
-            justify-content: center; align-items: center;
-        }
-
-        .modal-content {
-            background: var(--rolex-card); border: 1px solid var(--rolex-border);
-            padding: 36px; border-radius: 24px; width: 90%; max-width: 480px; text-align: center; color: #fff;
-        }
-
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 9999; justify-content: center; align-items: center; }
+        .modal-content { background: var(--rolex-card); border: 1px solid var(--rolex-border); padding: 36px; border-radius: 24px; width: 90%; max-width: 480px; text-align: center; color: #fff; }
         #sigCanvas { border: 1px dashed var(--rolex-border); border-radius: 12px; width: 100%; height: 190px; cursor: crosshair; background: rgba(0,0,0,0.4); }
     </style>
 </head>
 <body>
 
-<!-- 1. ŞİFRELİ LOGIN EKRANI -->
+<!-- LOGIN OVERLAY -->
 <div id="loginOverlay">
     <div class="login-card">
         <h1 class="lazzoni-title">LAZZONI</h1>
         <div class="lazzoni-sub">HAUTE LOGISTIQUE PORTALI</div>
         
         <input type="text" id="loginUser" class="login-input" placeholder="Kullanıcı Adı" onkeydown="handleEnterKey(event)">
-        
         <div class="input-group-pass">
             <input type="password" id="loginPass" class="login-input" placeholder="Şifre" onkeydown="handleEnterKey(event)">
             <button class="toggle-pass-btn" onclick="togglePassView()">👁️</button>
         </div>
-        
         <button class="login-btn" onclick="checkLogin()">GİRİŞ YAP</button>
     </div>
 </div>
 
-<!-- 2. ŞEHİR SEÇİM HUB EKRANI (POST-LOGIN) -->
+<!-- ŞEHİR SEÇİM HUB EKRANI -->
 <div id="cityHubOverlay">
     <div class="hub-header">
         <h2>OPERASYON BÖLGESİ SEÇİNİZ</h2>
@@ -698,7 +291,6 @@
     </div>
 
     <div class="city-cards-container">
-        <!-- ANKARA KARTI -->
         <div class="city-card" onclick="selectCity('ankara')">
             <svg class="city-map-svg" viewBox="0 0 200 200" fill="none" stroke="#d4af37" stroke-width="1.2">
                 <path d="M40 90 L70 50 L120 40 L160 80 L150 140 L100 170 L50 140 Z M70 50 L100 100 L150 140 M120 40 L100 100 M50 140 L100 100" />
@@ -709,7 +301,6 @@
             <div class="city-enter-btn">PANELİ AÇ ➔</div>
         </div>
 
-        <!-- İSTANBUL KARTI -->
         <div class="city-card" onclick="selectCity('istanbul')">
             <svg class="city-map-svg" viewBox="0 0 200 200" fill="none" stroke="#d4af37" stroke-width="1.2">
                 <path d="M20 100 C60 80, 80 110, 100 90 C120 70, 150 90, 180 80 M100 90 L110 130 M30 70 L80 60 L120 50 L170 60 M40 130 L90 140 L140 130" />
@@ -722,7 +313,7 @@
     </div>
 </div>
 
-<!-- 3. ANA OPERASYON KOKPİTİ -->
+<!-- ANA OPERASYON KOKPİTİ -->
 <div class="app-container" id="appContent">
     <div class="top-bar">
         <div>
@@ -748,9 +339,7 @@
     </div>
 
     <div class="folder-archive-card">
-        <div class="folder-archive-title">
-            📁 Yıllık Arşiv Klasörleri (Kayıtlı Excel Günleri)
-        </div>
+        <div class="folder-archive-title">📁 Yıllık Arşiv Klasörleri (Kayıtlı Excel Günleri)</div>
         <div class="months-grid" id="monthsGrid"></div>
         <div class="days-list-container" id="daysListContainer">
             <div style="font-size: 0.78rem; font-weight: bold; margin-bottom: 8px; color: var(--rolex-gold);" id="selectedMonthTitle"></div>
@@ -823,7 +412,6 @@
             <div class="map-card">
                 <div id="map"></div>
             </div>
-            
             <div class="route-stats-panel">
                 <div class="stat-item">
                     <div class="stat-value" id="statDistance">0 km</div>
@@ -857,7 +445,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    // GOOGLE FIREBASE BİLGİLERİN
+    // FIREBASE BİLGİLERİ
     const firebaseConfig = {
       apiKey: "AIzaSyDOzqQp0QdzsfwKy_NJFcju0a8LBgceNSU",
       authDomain: "lazzonilojistik.firebaseapp.com",
@@ -869,7 +457,6 @@
       measurementId: "G-E3RZ384JWY"
     };
 
-    // Firebase Başlatma
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
@@ -878,6 +465,7 @@
     let currentSigRow = null;
     let currentUser = null;
     let currentCity = 'ankara';
+    let activeListenerRef = null; // Aktif Dinleyici Takibi
 
     const cityConfigs = {
         'ankara': {
@@ -901,7 +489,7 @@
         'talha':  { pass: 'Tlh$4529*m', name: 'Talha', isAdmin: false }
     };
 
-    const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylul", "Ekim", "Kasım", "Aralık"];
+    const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
 
     function handleEnterKey(event) {
         if (event.key === "Enter") checkLogin();
@@ -919,7 +507,6 @@
         if (users[u] && users[u].pass === p) {
             currentUser = users[u];
             localStorage.setItem('montaj_session', u);
-            
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('cityHubOverlay').style.display = 'flex';
         } else {
@@ -944,17 +531,17 @@
 
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('dateInput').value = today;
-        
-        // CANLI BULUT DİNLEYİCİSİ BAŞLAT
         attachLiveDatabaseListener();
     }
 
     function switchCityHub() {
+        if (activeListenerRef) activeListenerRef.off();
         document.getElementById('appContent').style.display = 'none';
         document.getElementById('cityHubOverlay').style.display = 'flex';
     }
 
     function logout() {
+        if (activeListenerRef) activeListenerRef.off();
         localStorage.removeItem('montaj_session');
         localStorage.removeItem('montaj_active_city');
         window.location.reload();
@@ -1077,7 +664,7 @@
             reindexRows();
             updateRowCount();
             updateFullMapRoute();
-            saveToCloud(true); // Otomatik bulutta da güncelle
+            saveToCloud(true);
         } else {
             alert(`⚠️ Sadece kendi eklediğiniz müşterileri silebilirsiniz!\n\nBu müşteri (${salesRepName}) Temsilcisine aittir.`);
         }
@@ -1214,29 +801,34 @@
         window.open(url, '_blank');
     }
 
-    /* FIREBASE CANLI BULUT SENKRONİZASYON MOTORU */
+    /* DÜZELTİLMİŞ TARİH İZOLASYONLU DİNLENME MOTORU */
     function attachLiveDatabaseListener() {
         const selectedDate = document.getElementById('dateInput').value;
         if (!selectedDate) return;
 
+        // Önceki aktif dinleyiciyi kesinlikle kapat
+        if (activeListenerRef) {
+            activeListenerRef.off();
+        }
+
+        // Seçilen şehre VE seçilen tarihe özel path
         const path = `montaj_${currentCity}/${selectedDate}`;
+        activeListenerRef = db.ref(path);
         
-        db.ref(path).on('value', (snapshot) => {
+        activeListenerRef.on('value', (snapshot) => {
             const data = snapshot.val();
             document.getElementById('tableBody').innerHTML = '';
 
-            if (data) {
+            if (data && data.rows) {
                 document.getElementById('plateInput').value = data.plate || '';
                 document.getElementById('leaderInput').value = data.leader || '';
                 document.getElementById('memberInput').value = data.member || '';
                 updateTitle();
-                if (data.rows && data.rows.length > 0) {
-                    data.rows.forEach(r => addRow(r));
-                } else {
-                    addRow();
-                }
+                data.rows.forEach(r => addRow(r));
             } else {
                 document.getElementById('plateInput').value = '';
+                document.getElementById('leaderInput').value = '';
+                document.getElementById('memberInput').value = '';
                 updateTitle();
                 addRow();
             }
@@ -1250,6 +842,8 @@
 
     function saveToCloud(silent = false) {
         const selectedDate = document.getElementById('dateInput').value;
+        if (!selectedDate) return;
+
         const rows = [];
         document.querySelectorAll('#tableBody tr').forEach(tr => {
             const inputs = tr.querySelectorAll('input');
@@ -1271,7 +865,7 @@
         db.ref(path).set(payload);
 
         if (!silent) {
-            alert(`✅ ${cityConfigs[currentCity].name} — ${selectedDate} tarihli program canlı bulut veritabanına kaydedildi!`);
+            alert(`✅ ${cityConfigs[currentCity].name} — ${selectedDate} tarihli program başarıyla kaydedildi!`);
         }
     }
 
@@ -1298,7 +892,7 @@
         const daysGrid = document.getElementById('daysGrid');
         const title = document.getElementById('selectedMonthTitle');
 
-        title.innerText = `📂 ${cityConfigs[currentCity].name} — ${monthName} Ayı Excel Kayıtları:`;
+        title.innerText = `📂 ${cityConfigs[currentCity].name} — ${monthName} Ayı Kayıtları:`;
         daysGrid.innerHTML = '';
         container.style.display = 'block';
 
