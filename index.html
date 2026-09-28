@@ -197,7 +197,6 @@
             justify-content: center;
         }
 
-        /* KARARŞTIRMA & PARLATMA EFEKTİ İÇİN HUB GRUBU */
         .city-cards-container:hover .city-card {
             opacity: 0.35;
             filter: grayscale(60%) blur(1px);
@@ -228,7 +227,6 @@
             box-shadow: 0 30px 70px rgba(212, 175, 55, 0.25);
         }
 
-        /* SVG ŞEHİR SİLÜET ARKA PLANLARI */
         .city-map-svg {
             position: absolute;
             top: 50%;
@@ -536,7 +534,7 @@
 
         .main-layout {
             display: grid;
-            grid-template-columns: 1fr 400px;
+            grid-template-columns: 1fr 420px;
             gap: 24px;
             margin-top: 24px;
         }
@@ -600,18 +598,50 @@
 
         .btn-action-icon:hover { border-color: var(--rolex-gold); color: var(--rolex-gold); }
 
+        /* HARİTA KART KISMI & CANLI İSTATİSTİK PANALİ */
+        .map-card-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: sticky;
+            top: 24px;
+        }
+
         .map-card {
             background: var(--rolex-card);
             border-radius: 24px;
             padding: 14px;
             border: 1px solid var(--rolex-border);
-            height: 620px;
-            position: sticky;
-            top: 24px;
+            height: 500px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.6);
         }
 
         #map { width: 100%; height: 100%; border-radius: 16px; }
+
+        .route-stats-panel {
+            background: var(--rolex-card);
+            border: 1px solid var(--rolex-border);
+            border-radius: 20px;
+            padding: 18px 24px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            text-align: center;
+        }
+
+        .stat-item .stat-value {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--rolex-gold);
+        }
+
+        .stat-item .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
 
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -656,7 +686,6 @@
     <div class="city-cards-container">
         <!-- ANKARA KARTI -->
         <div class="city-card" onclick="selectCity('ankara')">
-            <!-- Ankara Harita Vektör Çizimi -->
             <svg class="city-map-svg" viewBox="0 0 200 200" fill="none" stroke="#d4af37" stroke-width="1.2">
                 <path d="M40 90 L70 50 L120 40 L160 80 L150 140 L100 170 L50 140 Z M70 50 L100 100 L150 140 M120 40 L100 100 M50 140 L100 100" />
                 <circle cx="100" cy="100" r="4" fill="#d4af37" />
@@ -668,7 +697,6 @@
 
         <!-- İSTANBUL KARTI -->
         <div class="city-card" onclick="selectCity('istanbul')">
-            <!-- İstanbul Harita Vektör Çizimi -->
             <svg class="city-map-svg" viewBox="0 0 200 200" fill="none" stroke="#d4af37" stroke-width="1.2">
                 <path d="M20 100 C60 80, 80 110, 100 90 C120 70, 150 90, 180 80 M100 90 L110 130 M30 70 L80 60 L120 50 L170 60 M40 130 L90 140 L140 130" />
                 <circle cx="110" cy="130" r="4" fill="#d4af37" />
@@ -776,8 +804,26 @@
             </table>
         </div>
 
-        <div class="map-card">
-            <div id="map"></div>
+        <!-- HARİTA & ROTA İSTATİSTİK PANALİ -->
+        <div class="map-card-wrapper">
+            <div class="map-card">
+                <div id="map"></div>
+            </div>
+            
+            <div class="route-stats-panel">
+                <div class="stat-item">
+                    <div class="stat-value" id="statDistance">0 km</div>
+                    <div class="stat-label">Toplam Mesafe</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statDuration">0 dk</div>
+                    <div class="stat-label">Tahmini Sürüş</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statStops">0</div>
+                    <div class="stat-label">Durak Sayısı</div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -797,13 +843,12 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    let map, markers = [];
+    let map, routeLine = null, markersGroup = null;
     const MAX_CAPACITY = 7;
     let currentSigRow = null;
     let currentUser = null;
-    let currentCity = 'ankara'; // Varsayılan şehir
+    let currentCity = 'ankara';
 
-    // ŞEHİRLERE ÖZEL BAŞLANGIÇ DEPO LOKASYONLARI
     const cityConfigs = {
         'ankara': {
             name: 'ANKARA',
@@ -845,7 +890,6 @@
             currentUser = users[u];
             localStorage.setItem('montaj_session', u);
             
-            // Login Başarılı -> Şehir Seçim Hub'ına Geç
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('cityHubOverlay').style.display = 'flex';
         } else {
@@ -905,9 +949,11 @@
         if (!map) {
             map = L.map('map').setView(config.latLng, 10);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+            markersGroup = L.layerGroup().addTo(map);
         } else {
             map.setView(config.latLng, 10);
         }
+        updateFullMapRoute();
     }
 
     function updateTitle() {
@@ -953,7 +999,7 @@
             <td><input type="text" class="cell-input" value="${data.qty || ''}" placeholder="Miktar"></td>
             <td><input type="text" class="cell-input" value="${data.pkg || ''}" placeholder="Paket"></td>
             <td><input type="text" class="cell-input" value="${data.volume || ''}" placeholder="Hacim"></td>
-            <td><input type="text" class="cell-input cell-address" value="${data.address || ''}" placeholder="Adres" onchange="geocodeRow(this)"></td>
+            <td><input type="text" class="cell-input cell-address" value="${data.address || ''}" placeholder="Adres" onchange="updateFullMapRoute()"></td>
             <td><input type="text" class="cell-input" value="${data.desc || ''}" placeholder="Açıklama"></td>
             <td><input type="text" class="cell-input" value="${data.rtt || ''}" placeholder="RTT"></td>
             <td><input type="text" class="cell-input" value="${salesRepValue}" ${isSalesDisabled}></td>
@@ -969,6 +1015,7 @@
 
         tbody.appendChild(tr);
         updateRowCount();
+        updateFullMapRoute();
     }
 
     function moveRow(btn, direction) {
@@ -979,6 +1026,7 @@
             tr.parentNode.insertBefore(tr.nextElementSibling, tr);
         }
         reindexRows();
+        updateFullMapRoute();
     }
 
     function makeCall(btn) {
@@ -991,6 +1039,7 @@
         btn.closest('tr').remove();
         reindexRows();
         updateRowCount();
+        updateFullMapRoute();
     }
 
     function reindexRows() {
@@ -1003,6 +1052,76 @@
         const count = document.querySelectorAll('#tableBody tr').length;
         document.getElementById('rowCountDisplay').innerText = count;
         document.getElementById('capacityPercent').innerText = `${Math.round((count / MAX_CAPACITY) * 100)}%`;
+    }
+
+    /* AKILLI OTOMATİK ROTA İYİLEŞTİRME & MESAFE MOTORU */
+    async function updateFullMapRoute() {
+        if (!map) return;
+        markersGroup.clearLayers();
+        if (routeLine) map.removeLayer(routeLine);
+
+        const config = cityConfigs[currentCity];
+        const routePoints = [config.latLng];
+
+        // Depo İkonu (Çıkış Noktası)
+        const depotMarker = L.marker(config.latLng).addTo(markersGroup)
+            .bindPopup(`<b>📍 ÇIKIŞ DEPOSU</b><br>${config.depot}`);
+
+        const rows = Array.from(document.querySelectorAll('#tableBody tr'));
+        let stopsCount = 0;
+
+        for (let i = 0; i < rows.length; i++) {
+            const addr = rows[i].querySelector('.cell-address').value.trim();
+            const customer = rows[i].querySelector('.cell-customer').value.trim() || `Müşteri ${i+1}`;
+            
+            if (addr) {
+                try {
+                    const res = await fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(addr)}&maxLocations=1`);
+                    const data = await res.json();
+                    if (data.candidates && data.candidates.length > 0) {
+                        const loc = data.candidates[0].location;
+                        const pt = [loc.y, loc.x];
+                        routePoints.push(pt);
+                        stopsCount++;
+
+                        L.marker(pt).addTo(markersGroup)
+                            .bindPopup(`<b>${i+1}. ${customer}</b><br>${addr}`);
+                    }
+                } catch(e) { console.log(e); }
+            }
+        }
+
+        document.getElementById('statStops').innerText = stopsCount;
+
+        if (routePoints.length > 1) {
+            // Rota Çizgisi Çiz (Altın/Bronz Lüks Çizgi)
+            routeLine = L.polyline(routePoints, {
+                color: '#d4af37',
+                weight: 4,
+                opacity: 0.8,
+                dashArray: '8, 8'
+            }).addTo(map);
+
+            map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
+
+            // Kuş Uçuşu + Karayolu Katsayısı Mesafesi Hesapla
+            let totalKm = 0;
+            for (let j = 0; j < routePoints.length - 1; j++) {
+                const p1 = L.latLng(routePoints[j]);
+                const p2 = L.latLng(routePoints[j+1]);
+                totalKm += p1.distanceTo(p2) / 1000;
+            }
+
+            const estimatedRoadKm = Math.round(totalKm * 1.3); // Karayolu Çarpanı
+            const estimatedDurationMin = Math.round(estimatedRoadKm * 1.8); // Şehir içi sürüş süresi tahmini
+
+            document.getElementById('statDistance').innerText = `${estimatedRoadKm} km`;
+            document.getElementById('statDuration').innerText = estimatedDurationMin > 60 ? 
+                `${Math.floor(estimatedDurationMin/60)} sa ${estimatedDurationMin%60} dk` : `${estimatedDurationMin} dk`;
+        } else {
+            document.getElementById('statDistance').innerText = `0 km`;
+            document.getElementById('statDuration').innerText = `0 dk`;
+        }
     }
 
     function optimizeRoute() {
@@ -1022,6 +1141,7 @@
         tbody.innerHTML = '';
         rows.forEach(r => tbody.appendChild(r));
         reindexRows();
+        updateFullMapRoute();
         alert(`⚡ ${cityConfigs[currentCity].depot} çıkışlı rota en verimli mesafeye göre sıralandı!`);
     }
 
@@ -1238,20 +1358,6 @@
             }
         });
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
-    }
-
-    function geocodeRow(input) {
-        const address = input.value.trim();
-        if (!address) return;
-        fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(address)}&maxLocations=1`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.candidates && data.candidates.length > 0) {
-                    const loc = data.candidates[0].location;
-                    L.marker([loc.y, loc.x]).addTo(map).bindPopup(`<b>${address}</b>`).openPopup();
-                    map.setView([loc.y, loc.x], 12);
-                }
-            });
     }
 </script>
 
