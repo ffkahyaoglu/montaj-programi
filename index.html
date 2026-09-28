@@ -89,7 +89,7 @@
             display: none;
         }
 
-        /* Üst Bar: Oturum & Hava Durumu */
+        /* Üst Bar */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -110,18 +110,6 @@
             border-radius: 20px;
             font-weight: 700;
             font-size: 0.75rem;
-        }
-
-        .weather-pill {
-            background: #1e293b;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            color: #f8fafc;
-            border: 1px solid #334155;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
         /* Başlık Kartı */
@@ -148,26 +136,85 @@
             border: 1px solid rgba(255,255,255,0.2);
         }
 
-        .analytics-card {
+        /* 12 AYLIK KLASÖR ARŞİVİ PANELİ */
+        .folder-archive-card {
             background: white;
-            padding: 15px 24px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            padding: 15px 20px;
             border-bottom: 2px solid #e2e8f0;
         }
 
-        .stat-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 12px;
-            border-radius: 10px;
-            text-align: center;
+        .folder-archive-title {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #1e293b;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .stat-box .number { font-size: 1.4rem; font-weight: bold; color: var(--primary); }
-        .stat-box .label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 600; }
+        .months-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+            gap: 8px;
+        }
 
+        .month-folder {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 8px 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .month-folder:hover {
+            background: #e2e8f0;
+            border-color: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        .month-folder.active {
+            background: var(--primary-light);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .days-list-container {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .days-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .day-excel-btn {
+            background: #ffffff;
+            border: 1px solid #16a34a;
+            color: #15803d;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .day-excel-btn:hover { background: #f0fdf4; }
+
+        /* Bilgi Form Kartı */
         .info-card {
             background: var(--card-bg);
             padding: 16px 24px;
@@ -240,6 +287,7 @@
         }
 
         input.cell-customer { background-color: #fef08a; font-weight: 700; color: #0f172a; }
+        input.cell-salesrep { background-color: #e2e8f0; font-weight: bold; color: #334155; }
 
         .btn-action-icon {
             background: #e2e8f0; border: none; padding: 5px 8px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;
@@ -267,7 +315,7 @@
 </head>
 <body>
 
-<!-- LOGIN EKRANI OVERLAY -->
+<!-- LOGIN OVERLAY -->
 <div id="loginOverlay">
     <div class="login-box">
         <h3>🚛 Operasyon Girişi</h3>
@@ -278,16 +326,16 @@
     </div>
 </div>
 
-<!-- ANA UYGULAMA İÇERİĞİ -->
+<!-- ANA UYGULAMA -->
 <div class="app-container" id="appContent">
-    <!-- Üst Bar: Oturum & Hava Durumu -->
+    <!-- Üst Bar -->
     <div class="top-bar">
         <div>
             <span>🔐 Kullanıcı: <strong id="activeUserDisplay">---</strong></span>
             <span class="user-badge">Aktif</span>
             <button class="btn-logout" onclick="logout()">Çıkış Yap 🚪</button>
         </div>
-        <div class="weather-pill">
+        <div>
             <span>☀️ Ankara Saha Hava Durumu: <strong>22°C (Açık - Montaj İçin Uygun)</strong></span>
         </div>
     </div>
@@ -302,19 +350,17 @@
         </div>
     </div>
 
-    <!-- Performans Analiz Paneli -->
-    <div class="analytics-card">
-        <div class="stat-box">
-            <div class="number" id="statTotal">0</div>
-            <div class="label">Top. Planlanan Montaj</div>
+    <!-- 12 AYLIK KLASÖR ARŞİVİ PANELİ -->
+    <div class="folder-archive-card">
+        <div class="folder-archive-title">
+            📁 Yıllık Arşiv Klasörleri (Kayıtlı Excel Günleri)
         </div>
-        <div class="stat-box">
-            <div class="number" id="statProof">0</div>
-            <div class="label">Kanıtlanan Teslimat</div>
+        <div class="months-grid" id="monthsGrid">
+            <!-- 12 Ayın Klasör Butonları Dinamik Gelecek -->
         </div>
-        <div class="stat-box">
-            <div class="number" id="statRate">0%</div>
-            <div class="label">Saha Tamamlama Oranı</div>
+        <div class="days-list-container" id="daysListContainer">
+            <div style="font-size: 0.75rem; font-weight: bold; margin-bottom: 6px; color: #475569;" id="selectedMonthTitle">Ocak Ayı Kayıtları:</div>
+            <div class="days-grid" id="daysGrid"></div>
         </div>
     </div>
 
@@ -338,7 +384,7 @@
         </div>
     </div>
 
-    <!-- Aksiyon Butonları Barı -->
+    <!-- Aksiyon Butonları -->
     <div class="action-bar">
         <button class="btn btn-primary" onclick="addRow()">➕ Yeni Müşteri Ekle</button>
         <button class="btn btn-success" onclick="saveToCloud()">☁️ Günü Kaydet</button>
@@ -408,37 +454,42 @@
     let map, markers = [];
     const MAX_CAPACITY = 7;
     let currentSigRow = null;
+    let currentUser = null;
 
-    // SADECE 4 KULLANICI LİSTESİ (UNVANSIZ)
     const users = {
-        'furkan': { pass: '1907', name: 'Furkan' },
-        'ecem':   { pass: 'Ecm*9274!p', name: 'Ecem' },
-        'eda':    { pass: 'Eda#8163&k', name: 'Eda' },
-        'talha':  { pass: 'Tlh$4529*m', name: 'Talha' }
+        'furkan': { pass: '1907', name: 'Furkan', isAdmin: true },
+        'ecem':   { pass: 'Ecm*9274!p', name: 'Ecem', isAdmin: false },
+        'eda':    { pass: 'Eda#8163&k', name: 'Eda', isAdmin: false },
+        'talha':  { pass: 'Tlh$4529*m', name: 'Talha', isAdmin: false }
     };
+
+    const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
 
     function checkLogin() {
         const u = document.getElementById('loginUser').value.trim().toLowerCase();
         const p = document.getElementById('loginPass').value.trim();
 
         if (users[u] && users[u].pass === p) {
-            localStorage.setItem('montaj_session', users[u].name);
-            showApp(users[u].name);
+            currentUser = users[u];
+            localStorage.setItem('montaj_session', u);
+            showApp();
         } else {
             alert("⚠️ Hatalı Kullanıcı Adı veya Şifre!");
         }
     }
 
-    function showApp(userName) {
+    function showApp() {
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('appContent').style.display = 'block';
-        document.getElementById('activeUserDisplay').innerText = userName;
+        document.getElementById('activeUserDisplay').innerText = currentUser.name;
         
         initMap();
         initSignaturePad();
+        renderMonthFolders();
+
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('dateInput').value = today;
-        addRow();
+        handleDateChange();
     }
 
     function logout() {
@@ -448,8 +499,9 @@
 
     window.onload = function() {
         const session = localStorage.getItem('montaj_session');
-        if (session) {
-            showApp(session);
+        if (session && users[session]) {
+            currentUser = users[session];
+            showApp();
         }
     };
 
@@ -465,6 +517,7 @@
         document.getElementById('displayTitle').innerText = plate ? `${plate.toUpperCase()} _ ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI` : `ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI`;
     }
 
+    // SATIR EKLEME (SATIŞ TEMSİLCİSİ OTOMATİK VE KİLİTLİ)
     function addRow(data = {}) {
         const tbody = document.getElementById('tableBody');
         const currentCount = tbody.getElementsByTagName('tr').length;
@@ -473,6 +526,12 @@
             alert(`⚠️ Araç Yükleme Kapasite Sınırı (7 Müşteri) Doldu!`);
             return;
         }
+
+        // Satış Temsilcisi Belirleme Logic
+        let salesRepValue = data.salesRep || currentUser.name;
+        
+        // Furkan (Admin) ise değiştirebilir, değilse kilitli (disabled)
+        const isSalesDisabled = currentUser.isAdmin ? '' : 'disabled';
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -491,7 +550,7 @@
             <td><input type="text" class="cell-input" value="${data.address || ''}" placeholder="Adres" onchange="geocodeRow(this)"></td>
             <td><input type="text" class="cell-input" value="${data.desc || ''}" placeholder="Açıklama"></td>
             <td><input type="text" class="cell-input" value="${data.rtt || ''}" placeholder="RTT"></td>
-            <td><input type="text" class="cell-input" value="${data.salesRep || ''}" placeholder="Satış Temsilcisi"></td>
+            <td><input type="text" class="cell-input cell-salesrep" value="${salesRepValue}" ${isSalesDisabled}></td>
             <td><input type="text" class="cell-input" value="${data.status || ''}" placeholder="Durum"></td>
             <td><button class="btn-action-icon" onclick="sendCustomerWA(this)" title="WhatsApp">💬</button></td>
             <td>
@@ -520,95 +579,60 @@
         const count = document.querySelectorAll('#tableBody tr').length;
         document.getElementById('rowCountDisplay').innerText = count;
         document.getElementById('capacityPercent').innerText = `${Math.round((count / MAX_CAPACITY) * 100)}%`;
-        document.getElementById('statTotal').innerText = count;
     }
 
-    function handlePhotoUpload(input) {
-        if (input.files && input.files[0]) {
-            alert(`✅ Montaj fotoğrafı yüklendi: ${input.files[0].name}`);
-            input.nextElementSibling.style.background = "#22c55e";
-            input.nextElementSibling.style.color = "white";
-            updateStats();
-        }
-    }
+    /* 12 AYLIK KLASÖR MANTIĞI */
+    function renderMonthFolders() {
+        const grid = document.getElementById('monthsGrid');
+        grid.innerHTML = '';
 
-    let isDrawing = false, canvas, ctx;
-    function initSignaturePad() {
-        canvas = document.getElementById('sigCanvas');
-        ctx = canvas.getContext('2d');
-        canvas.addEventListener('mousedown', () => isDrawing = true);
-        canvas.addEventListener('mouseup', () => { isDrawing = false; ctx.beginPath(); });
-        canvas.addEventListener('mousemove', drawSignature);
-    }
-
-    function drawSignature(e) {
-        if (!isDrawing) return;
-        const rect = canvas.getBoundingClientRect();
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = '#0f172a';
-        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-    }
-
-    function openSigModal(btn) {
-        currentSigRow = btn;
-        document.getElementById('sigModal').style.display = 'flex';
-    }
-
-    function closeSigModal() {
-        document.getElementById('sigModal').style.display = 'none';
-        clearSignature();
-    }
-
-    function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-
-    function saveSignature() {
-        alert("✅ İmzalandı!");
-        if (currentSigRow) {
-            currentSigRow.style.background = "#22c55e";
-            currentSigRow.style.color = "white";
-        }
-        closeSigModal();
-        updateStats();
-    }
-
-    function updateStats() {
-        let proofCount = 0;
-        document.querySelectorAll('#tableBody tr').forEach(tr => {
-            const btnPhoto = tr.children[18].querySelector('button');
-            if (btnPhoto && btnPhoto.style.background === "rgb(34, 197, 94)") proofCount++;
+        monthNames.forEach((month, index) => {
+            const folder = document.createElement('div');
+            folder.className = 'month-folder';
+            folder.innerHTML = `📁 ${month}`;
+            folder.onclick = () => selectMonthFolder(index, month);
+            grid.appendChild(folder);
         });
-        document.getElementById('statProof').innerText = proofCount;
-        const total = parseInt(document.getElementById('statTotal').innerText) || 1;
-        document.getElementById('statRate').innerText = `${Math.round((proofCount / total) * 100)}%`;
     }
 
-    function sendCustomerWA(btn) {
-        const inputs = btn.closest('tr').querySelectorAll('input');
-        const phone = inputs[1].value.trim().replace(/\s+/g, '');
-        const customer = inputs[2].value.trim();
-        const plate = document.getElementById('plateInput').value.trim() || 'Montaj Aracımız';
+    function selectMonthFolder(monthIndex, monthName) {
+        document.querySelectorAll('.month-folder').forEach((f, idx) => {
+            if (idx === monthIndex) f.classList.add('active');
+            else f.classList.remove('active');
+        });
 
-        if (!phone) { alert("⚠️ Lütfen telefon numarasını girin!"); return; }
-        const text = `Sayın *${customer || 'Müşterimiz'}*,\n\n${plate} plakalı aracımız montajınız için yola çıkmıştır.\nİyi günler dileriz.`;
-        window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`, '_blank');
-    }
+        const container = document.getElementById('daysListContainer');
+        const daysGrid = document.getElementById('daysGrid');
+        const title = document.getElementById('selectedMonthTitle');
 
-    function shareRouteWhatsApp() {
-        const plate = document.getElementById('plateInput').value || 'PLAKASIZ';
-        const date = document.getElementById('dateInput').value;
+        title.innerText = `📂 ${monthName} Ayı Excel Kayıt Dosyaları:`;
+        daysGrid.innerHTML = '';
+        container.style.display = 'block';
 
-        let text = `🚚 *GÜNLÜK MONTAJ PROGRAMI*\n📅 *Tarih:* ${date}\n🚛 *Plaka:* ${plate}\n-----------------------------------\n`;
-        document.querySelectorAll('#tableBody tr').forEach((tr, index) => {
-            const inputs = tr.querySelectorAll('input');
-            if (inputs[2].value.trim()) {
-                text += `\n*${index + 1}. ${inputs[2].value}*\n📞 Tel: ${inputs[1].value}\n📍 Adres: ${inputs[11].value}\n`;
+        // LocalStorage içerisindeki ilgili ayın kayıtlarını tarayalım
+        let found = false;
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('montaj_')) {
+                const dateStr = key.replace('montaj_', '');
+                const dateObj = new Date(dateStr);
+                if (dateObj.getMonth() === monthIndex) {
+                    found = true;
+                    const btn = document.createElement('button');
+                    btn.className = 'day-excel-btn';
+                    btn.innerHTML = `📊 ${dateStr}.xlsx`;
+                    btn.onclick = () => {
+                        document.getElementById('dateInput').value = dateStr;
+                        handleDateChange();
+                    };
+                    daysGrid.appendChild(btn);
+                }
             }
-        });
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        if (!found) {
+            daysGrid.innerHTML = `<span style="font-size:0.75rem; color:#94a3b8;">Bu ay için henüz kaydedilmiş bir gün yok.</span>`;
+        }
     }
 
     function handleDateChange() {
@@ -651,6 +675,10 @@
         };
         localStorage.setItem(`montaj_${selectedDate}`, JSON.stringify(payload));
         alert(`✅ ${selectedDate} tarihli program kaydedildi!`);
+        
+        // Klasör listesini güncelle
+        const d = new Date(selectedDate);
+        selectMonthFolder(d.getMonth(), monthNames[d.getMonth()]);
     }
 
     function exportToExcel() {
@@ -671,6 +699,66 @@
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Montaj Programı");
         XLSX.writeFile(wb, `${plate}_Montaj_Programi_${date}.xlsx`);
+    }
+
+    /* MEDYA & DİJİTAL İMZA MOTORU */
+    function handlePhotoUpload(input) {
+        if (input.files && input.files[0]) {
+            alert(`✅ Montaj fotoğrafı yüklendi: ${input.files[0].name}`);
+            input.nextElementSibling.style.background = "#22c55e";
+            input.nextElementSibling.style.color = "white";
+        }
+    }
+
+    let isDrawing = false, canvas, ctx;
+    function initSignaturePad() {
+        canvas = document.getElementById('sigCanvas');
+        ctx = canvas.getContext('2d');
+        canvas.addEventListener('mousedown', () => isDrawing = true);
+        canvas.addEventListener('mouseup', () => { isDrawing = false; ctx.beginPath(); });
+        canvas.addEventListener('mousemove', drawSignature);
+    }
+
+    function drawSignature(e) {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#0f172a';
+        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function openSigModal(btn) { currentSigRow = btn; document.getElementById('sigModal').style.display = 'flex'; }
+    function closeSigModal() { document.getElementById('sigModal').style.display = 'none'; clearSignature(); }
+    function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+    function saveSignature() {
+        alert("✅ Müşteri İmzalandı!");
+        if (currentSigRow) { currentSigRow.style.background = "#22c55e"; currentSigRow.style.color = "white"; }
+        closeSigModal();
+    }
+
+    function sendCustomerWA(btn) {
+        const inputs = btn.closest('tr').querySelectorAll('input');
+        const phone = inputs[1].value.trim().replace(/\s+/g, '');
+        const customer = inputs[2].value.trim();
+        const plate = document.getElementById('plateInput').value.trim() || 'Montaj Aracımız';
+
+        if (!phone) { alert("⚠️ Lütfen telefon numarasını girin!"); return; }
+        const text = `Sayın *${customer || 'Müşterimiz'}*,\n\n${plate} plakalı aracımız montajınız için yola çıkmıştır.\nİyi günler dileriz.`;
+        window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function shareRouteWhatsApp() {
+        const plate = document.getElementById('plateInput').value || 'PLAKASIZ';
+        const date = document.getElementById('dateInput').value;
+
+        let text = `🚚 *GÜNLÜK MONTAJ PROGRAMI*\n📅 *Tarih:* ${date}\n🚛 *Plaka:* ${plate}\n-----------------------------------\n`;
+        document.querySelectorAll('#tableBody tr').forEach((tr, index) => {
+            const inputs = tr.querySelectorAll('input');
+            if (inputs[2].value.trim()) {
+                text += `\n*${index + 1}. ${inputs[2].value}*\n📞 Tel: ${inputs[1].value}\n📍 Adres: ${inputs[11].value}\n`;
+            }
+        });
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
     }
 
     function openNav(type) {
