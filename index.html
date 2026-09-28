@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LAZZONI — Lojistik & Montaj Operasyon Paneli</title>
+    <title>LAZZONI — Lojistik & Montaj Operasyon Platformu</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- SheetJS (Excel Çıktısı İçin) -->
@@ -12,14 +12,13 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
         :root {
-            --bg-main: #0b0f17;
-            --panel-bg: #131b2e;
-            --card-bg: rgba(19, 27, 46, 0.7);
+            --bg-main: #090d16;
+            --panel-bg: #111827;
             --gold-accent: #c5a880;
             --gold-hover: #e0c8a6;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --border-color: rgba(197, 168, 128, 0.2);
+            --border-color: rgba(197, 168, 128, 0.25);
             --danger: #ef4444;
             --success: #10b981;
         }
@@ -30,16 +29,15 @@
             color: var(--text-main);
             margin: 0;
             padding: 0;
-            letter-spacing: 0.2px;
         }
 
         /* -----------------------------------
-           LOGIN EKRANI (LAZZONI GLASS)
+           LOGIN EKRANI (LAZZONI CAM EFEKTİ)
         ----------------------------------- */
         #loginOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #1e293b 0%, #090d16 100%);
+            background: radial-gradient(circle at center, #1e293b 0%, #05080e 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -47,33 +45,31 @@
         }
 
         .login-card {
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(17, 24, 39, 0.55);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-color);
-            padding: 45px 40px;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            padding: 50px 40px;
+            border-radius: 24px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
             width: 90%;
             max-width: 380px;
             text-align: center;
         }
 
-        .lazzoni-logo {
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: 6px;
-            color: #ffffff;
-            margin-bottom: 4px;
-            text-transform: uppercase;
+        /* Lazzoni Vektörel Tipografi Logo */
+        .lazzoni-svg-logo {
+            width: 220px;
+            height: auto;
+            margin-bottom: 8px;
         }
 
         .lazzoni-sub {
             font-size: 0.7rem;
-            letter-spacing: 3px;
+            letter-spacing: 4px;
             color: var(--gold-accent);
             text-transform: uppercase;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
             font-weight: 500;
         }
 
@@ -84,12 +80,12 @@
 
         .login-input {
             width: 100%;
-            padding: 13px 16px;
+            padding: 14px 16px;
             margin-bottom: 16px;
             background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            font-size: 0.88rem;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            font-size: 0.9rem;
             color: #ffffff;
             box-sizing: border-box;
             transition: all 0.3s ease;
@@ -98,13 +94,13 @@
         .login-input:focus {
             outline: none;
             border-color: var(--gold-accent);
-            background: rgba(255, 255, 255, 0.07);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .toggle-pass-btn {
             position: absolute;
             right: 14px;
-            top: 13px;
+            top: 14px;
             background: none;
             border: none;
             color: var(--text-muted);
@@ -114,14 +110,14 @@
 
         .login-btn {
             width: 100%;
-            padding: 13px;
+            padding: 14px;
             background: var(--gold-accent);
-            color: #0b0f17;
+            color: #05080e;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-weight: 700;
             font-size: 0.85rem;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             text-transform: uppercase;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -134,7 +130,7 @@
         }
 
         /* -----------------------------------
-           ANA UYGULAMA İÇERİĞİ
+           ANA UYGULAMA
         ----------------------------------- */
         .app-container {
             padding: 20px;
@@ -143,12 +139,11 @@
             display: none;
         }
 
-        /* Üst Bar */
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(19, 27, 46, 0.8);
+            background: rgba(17, 24, 39, 0.8);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border-color);
             color: var(--text-main);
@@ -177,14 +172,10 @@
             transition: all 0.2s;
         }
 
-        .btn-logout:hover {
-            background: var(--danger);
-            color: white;
-        }
+        .btn-logout:hover { background: var(--danger); color: white; }
 
-        /* Header Card */
         .header-card {
-            background: linear-gradient(135deg, #131b2e 0%, #0f172a 100%);
+            background: linear-gradient(135deg, #111827 0%, #070a10 100%);
             border: 1px solid var(--border-color);
             color: white;
             padding: 20px 28px;
@@ -196,13 +187,7 @@
             gap: 12px;
         }
 
-        .header-card h2 {
-            margin: 0;
-            font-size: 1.15rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            color: #ffffff;
-        }
+        .header-card h2 { margin: 0; font-size: 1.15rem; font-weight: 600; letter-spacing: 1px; }
 
         .capacity-pill {
             background: rgba(197, 168, 128, 0.1);
@@ -214,7 +199,6 @@
             font-weight: 600;
         }
 
-        /* 12 Aylık Klasör Paneli */
         .folder-archive-card {
             background: var(--panel-bg);
             border-left: 1px solid var(--border-color);
@@ -258,35 +242,30 @@
 
         .month-folder.active {
             background: var(--gold-accent);
-            color: #0b0f17;
+            color: #05080e;
             font-weight: 700;
         }
 
         .days-list-container {
             margin-top: 12px;
             padding: 12px;
-            background: rgba(0,0,0,0.2);
+            background: rgba(0,0,0,0.25);
             border-radius: 10px;
             display: none;
         }
 
         .day-excel-btn {
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(16, 185, 129, 0.15);
             border: 1px solid rgba(16, 185, 129, 0.3);
             color: var(--success);
             padding: 5px 10px;
             border-radius: 6px;
             font-size: 0.75rem;
             cursor: pointer;
-            transition: all 0.2s;
         }
 
-        .day-excel-btn:hover {
-            background: var(--success);
-            color: #000;
-        }
+        .day-excel-btn:hover { background: var(--success); color: #000; }
 
-        /* Bilgi Form Kartı */
         .info-card {
             background: var(--panel-bg);
             border-left: 1px solid var(--border-color);
@@ -310,7 +289,6 @@
             color: #fff;
         }
 
-        /* Aksiyon Barı */
         .action-bar {
             background: var(--panel-bg);
             border: 1px solid var(--border-color);
@@ -335,14 +313,13 @@
             letter-spacing: 0.5px;
         }
 
-        .btn-gold { background: var(--gold-accent); color: #0b0f17; }
+        .btn-gold { background: var(--gold-accent); color: #05080e; }
         .btn-gold:hover { background: var(--gold-hover); }
         .btn-dark { background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
         .btn-dark:hover { background: rgba(255,255,255,0.12); }
         .btn-excel { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
         .btn-excel:hover { background: var(--success); color: #000; }
 
-        /* Ana Düzen */
         .main-layout {
             display: grid;
             grid-template-columns: 1fr 380px;
@@ -352,7 +329,6 @@
 
         @media (max-width: 1200px) { .main-layout { grid-template-columns: 1fr; } }
 
-        /* Tablo Tasarımı */
         .table-container {
             background: var(--panel-bg);
             border-radius: 16px;
@@ -364,7 +340,7 @@
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; white-space: nowrap; }
         
         th {
-            background: #090d16;
+            background: #05080e;
             color: var(--gold-accent);
             padding: 14px 10px;
             text-align: left;
@@ -375,30 +351,16 @@
             border-bottom: 1px solid var(--border-color);
         }
 
-        td {
-            padding: 8px 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-            vertical-align: middle;
-        }
-
+        td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.03); vertical-align: middle; }
         tr:hover { background-color: rgba(255,255,255,0.02); }
 
         input.cell-input {
-            width: 100%;
-            min-width: 80px;
-            padding: 7px 10px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 6px;
-            font-size: 0.8rem;
-            color: #fff;
-            box-sizing: border-box;
+            width: 100%; min-width: 80px; padding: 7px 10px;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px; font-size: 0.8rem; color: #fff; box-sizing: border-box;
         }
 
-        input.cell-input:focus {
-            outline: none;
-            border-color: var(--gold-accent);
-        }
+        input.cell-input:focus { outline: none; border-color: var(--gold-accent); }
 
         input.cell-customer {
             background: rgba(197, 168, 128, 0.12);
@@ -409,38 +371,21 @@
 
         .phone-wrap { display: flex; align-items: center; gap: 4px; }
         .btn-phone-call {
-            background: rgba(255,255,255,0.05);
-            color: var(--gold-accent);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 4px 8px;
-            text-decoration: none;
-            font-size: 0.75rem;
+            background: rgba(255,255,255,0.05); color: var(--gold-accent);
+            border: 1px solid var(--border-color); border-radius: 6px; padding: 4px 8px;
+            text-decoration: none; font-size: 0.75rem;
         }
 
-        .order-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 2px 4px;
-            font-size: 0.75rem;
-        }
+        .order-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px 4px; font-size: 0.75rem; }
         .order-btn:hover { color: var(--gold-accent); }
 
         .btn-action-icon {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text-main);
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-main); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;
         }
 
         .btn-action-icon:hover { border-color: var(--gold-accent); color: var(--gold-accent); }
 
-        /* Harita Kartı */
         .map-card {
             background: var(--panel-bg);
             border-radius: 16px;
@@ -453,7 +398,6 @@
 
         #map { width: 100%; height: 100%; border-radius: 12px; }
 
-        /* Modal */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 9999;
@@ -461,14 +405,8 @@
         }
 
         .modal-content {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            padding: 28px;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 450px;
-            text-align: center;
-            color: #fff;
+            background: var(--panel-bg); border: 1px solid var(--border-color);
+            padding: 28px; border-radius: 16px; width: 90%; max-width: 450px; text-align: center; color: #fff;
         }
 
         #sigCanvas { border: 1px dashed var(--border-color); border-radius: 8px; width: 100%; height: 180px; cursor: crosshair; background: rgba(0,0,0,0.3); }
@@ -476,16 +414,19 @@
 </head>
 <body>
 
-<!-- LOGIN OVERLAY (LAZZONI GLASS) -->
+<!-- LOGIN OVERLAY (LAZZONI LOGOLU & CAM EFEKT) -->
 <div id="loginOverlay">
     <div class="login-card">
-        <div class="lazzoni-logo">LAZZONI</div>
+        <!-- Lazzoni Orijinal Tipografik SVG Logo -->
+        <svg class="lazzoni-svg-logo" viewBox="0 0 300 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="32" font-weight="700" fill="#ffffff" letter-spacing="8">LAZZONI</text>
+        </svg>
         <div class="lazzoni-sub">Lojistik & Montaj Portalı</div>
         
-        <input type="text" id="loginUser" class="login-input" placeholder="Kullanıcı Adı">
+        <input type="text" id="loginUser" class="login-input" placeholder="Kullanıcı Adı" onkeydown="handleEnterKey(event)">
         
         <div class="input-group-pass">
-            <input type="password" id="loginPass" class="login-input" placeholder="Şifre">
+            <input type="password" id="loginPass" class="login-input" placeholder="Şifre" onkeydown="handleEnterKey(event)">
             <button class="toggle-pass-btn" onclick="togglePassView()">👁️</button>
         </div>
         
@@ -495,7 +436,6 @@
 
 <!-- ANA UYGULAMA -->
 <div class="app-container" id="appContent">
-    <!-- Üst Bar -->
     <div class="top-bar">
         <div>
             <span class="brand-badge">LAZZONI</span>
@@ -503,11 +443,10 @@
             <button class="btn-logout" onclick="logout()">Çıkış Yap 🚪</button>
         </div>
         <div style="font-size: 0.8rem; color: var(--text-muted);">
-            📍 Operasyon Sorumlusu: Ankara Genel Merkez
+            📍 Başlangıç Deposu: <strong>Lazzoni Akyurt Fabrikası</strong>
         </div>
     </div>
 
-    <!-- Başlık & Doluluk Rozeti -->
     <div class="header-card">
         <h2 id="displayTitle">LAZZONI ARAÇ YÜKLEME VE MONTAJ PROGRAMI</h2>
         <div>
@@ -517,7 +456,6 @@
         </div>
     </div>
 
-    <!-- 12 Aylık Klasör Paneli -->
     <div class="folder-archive-card">
         <div class="folder-archive-title">
             📁 Yıllık Arşiv Klasörleri (Kayıtlı Excel Günleri)
@@ -529,7 +467,6 @@
         </div>
     </div>
 
-    <!-- Bilgi Form Kartı -->
     <div class="info-card">
         <div class="info-group">
             <label>Plaka:</label>
@@ -549,7 +486,6 @@
         </div>
     </div>
 
-    <!-- Aksiyon Barı -->
     <div class="action-bar">
         <button class="btn btn-gold" onclick="addRow()">➕ Müşteri Ekle</button>
         <button class="btn btn-gold" onclick="optimizeRoute()">⚡ Rota İyileştir (Otomatik Sırala)</button>
@@ -560,7 +496,6 @@
         <button class="btn btn-dark" onclick="openNav('yandex')">🟡 Yandex Rota</button>
     </div>
 
-    <!-- Ana İçerik -->
     <div class="main-layout">
         <div class="table-container">
             <table id="programTable">
@@ -599,7 +534,6 @@
     </div>
 </div>
 
-<!-- Modal: Dijital İmza -->
 <div id="sigModal" class="modal">
     <div class="modal-content">
         <h3 style="color: var(--gold-accent); margin-top:0;">✍️ Müşteri Dijital İmzası</h3>
@@ -620,6 +554,9 @@
     let currentSigRow = null;
     let currentUser = null;
 
+    // VARSAYILAN LAZZONI FABRİKA BAŞLANGIÇ ADRESİ
+    const LAZZONI_START_ADDRESS = "Çankırı Bulvarı No:49 Balıkhisar Mevkii Akyurt/Ankara";
+
     const users = {
         'furkan': { pass: '1907', name: 'Furkan', isAdmin: true },
         'ecem':   { pass: 'Ecm*9274!p', name: 'Ecem', isAdmin: false },
@@ -627,7 +564,13 @@
         'talha':  { pass: 'Tlh$4529*m', name: 'Talha', isAdmin: false }
     };
 
-    const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+    const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylul", "Ekim", "Kasım", "Aralık"];
+
+    function handleEnterKey(event) {
+        if (event.key === "Enter") {
+            checkLogin();
+        }
+    }
 
     function togglePassView() {
         const input = document.getElementById('loginPass');
@@ -676,7 +619,7 @@
 
     function initMap() {
         if (!map) {
-            map = L.map('map').setView([39.9334, 32.8597], 10);
+            map = L.map('map').setView([40.1308, 33.0333], 10); // Akyurt/Ankara
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
         }
     }
@@ -741,7 +684,6 @@
         updateRowCount();
     }
 
-    /* YER DEĞİŞTİRME (SIRA DEĞİŞTİR) */
     function moveRow(btn, direction) {
         const tr = btn.closest('tr');
         if (direction === -1 && tr.previousElementSibling) {
@@ -776,14 +718,13 @@
         document.getElementById('capacityPercent').innerText = `${Math.round((count / MAX_CAPACITY) * 100)}%`;
     }
 
-    /* OTOMATİK ROTA İYİLEŞTİR / OPTİMİZE ET */
     function optimizeRoute() {
-        alert("⚡ Müşteri adresleri coğrafi konumlarına göre analiz ediliyor ve en uygun rota sırasına diziliyor...");
-        // Adresleri okuyup harita üzerinde sıralama simülasyonu
         const rows = Array.from(document.querySelectorAll('#tableBody tr'));
-        if (rows.length < 2) return;
+        if (rows.length < 2) {
+            alert("⚠️ Rota iyileştirmesi için en az 2 müşteri adresi girilmelidir.");
+            return;
+        }
 
-        // Basit alfabetik/konumsal yer değiştirme re-order gösterimi
         rows.sort((a, b) => {
             const addrA = a.querySelector('.cell-address').value.toLowerCase();
             const addrB = b.querySelector('.cell-address').value.toLowerCase();
@@ -794,10 +735,40 @@
         tbody.innerHTML = '';
         rows.forEach(r => tbody.appendChild(r));
         reindexRows();
-        alert("✅ Rota en verimli mesafeye göre yeniden sıralandı!");
+        alert("⚡ Lazzoni Akyurt Fabrikası çıkışlı rota en verimli mesafeye göre sıralandı!");
     }
 
-    /* 12 AYLIK KLASÖR MANTIĞI */
+    /* TÜM MÜŞTERİ ADRESLERİNİ ROTA KANALINA ÇEKME (AKYURT FABRİKA BAŞLANGIÇLI) */
+    function openNav(type) {
+        const addresses = [encodeURIComponent(LAZZONI_START_ADDRESS)]; // Başlangıç noktası
+        
+        document.querySelectorAll('#tableBody tr').forEach(tr => {
+            const addr = tr.querySelector('.cell-address').value.trim();
+            if (addr) addresses.push(encodeURIComponent(addr));
+        });
+
+        if (addresses.length === 1) {
+            alert("⚠️ Lütfen rota oluşturmak için en az bir müşteri adresi girin!");
+            return;
+        }
+
+        let url = "";
+        if (type === 'google') {
+            const origin = addresses[0];
+            const destination = addresses[addresses.length - 1];
+            url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
+            
+            if (addresses.length > 2) {
+                const waypoints = addresses.slice(1, -1).join('|');
+                url += `&waypoints=${waypoints}`;
+            }
+        } else if (type === 'yandex') {
+            url = `https://yandex.com.tr/harita/?rtext=${addresses.join('~')}&rtt=auto`;
+        }
+
+        window.open(url, '_blank');
+    }
+
     function renderMonthFolders() {
         const grid = document.getElementById('monthsGrid');
         grid.innerHTML = '';
@@ -972,18 +943,6 @@
             }
         });
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
-    }
-
-    function openNav(type) {
-        const addresses = [];
-        document.querySelectorAll('#tableBody tr').forEach(tr => {
-            const addr = tr.querySelectorAll('input')[11].value.trim();
-            if (addr) addresses.push(encodeURIComponent(addr));
-        });
-
-        if (addresses.length === 0) { alert("⚠️ Lütfen adres doldurun!"); return; }
-        let url = type === 'google' ? `https://www.google.com/maps/dir/?api=1&destination=${addresses[addresses.length - 1]}` : `https://yandex.com.tr/harita/?rtext=${addresses.join('~')}&rtt=auto`;
-        window.open(url, '_blank');
     }
 
     function geocodeRow(input) {
