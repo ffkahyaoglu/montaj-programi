@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- SheetJS -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Firebase SDK (v9 Compatibility Mode) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -330,6 +334,17 @@
             margin-left: 10px;
         }
 
+        .sync-status-pill {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--success);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-left: 10px;
+        }
+
         .btn-change-city {
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-muted);
@@ -598,7 +613,6 @@
 
         .btn-action-icon:hover { border-color: var(--rolex-gold); color: var(--rolex-gold); }
 
-        /* HARİTA KART KISMI & CANLI İSTATİSTİK PANALİ */
         .map-card-wrapper {
             display: flex;
             flex-direction: column;
@@ -715,6 +729,7 @@
             <span class="brand-badge">LAZZONI</span>
             <span>Kullanıcı: <strong id="activeUserDisplay" style="color: var(--rolex-gold);">---</strong></span>
             <span class="city-badge" id="activeCityBadge">ANKARA</span>
+            <span class="sync-status-pill">⚡ Canlı Bulut Senkronize</span>
             <button class="btn-change-city" onclick="switchCityHub()">Şehir Değiştir 🔁</button>
             <button class="btn-logout" onclick="logout()">Çıkış 🚪</button>
         </div>
@@ -804,7 +819,6 @@
             </table>
         </div>
 
-        <!-- HARİTA & ROTA İSTATİSTİK PANALİ -->
         <div class="map-card-wrapper">
             <div class="map-card">
                 <div id="map"></div>
@@ -843,6 +857,22 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+    // GOOGLE FIREBASE BİLGİLERİN
+    const firebaseConfig = {
+      apiKey: "AIzaSyDOzqQp0QdzsfwKy_NJFcju0a8LBgceNSU",
+      authDomain: "lazzonilojistik.firebaseapp.com",
+      databaseURL: "https://lazzonilojistik-default-rtdb.firebaseio.com",
+      projectId: "lazzonilojistik",
+      storageBucket: "lazzonilojistik.firebasestorage.app",
+      messagingSenderId: "702032694748",
+      appId: "1:702032694748:web:65ea3c6b7b24f75c0b9319",
+      measurementId: "G-E3RZ384JWY"
+    };
+
+    // Firebase Başlatma
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     let map, routeLine = null, markersGroup = null;
     const MAX_CAPACITY = 7;
     let currentSigRow = null;
@@ -871,7 +901,7 @@
         'talha':  { pass: 'Tlh$4529*m', name: 'Talha', isAdmin: false }
     };
 
-    const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+    const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylul", "Ekim", "Kasım", "Aralık"];
 
     function handleEnterKey(event) {
         if (event.key === "Enter") checkLogin();
@@ -914,7 +944,9 @@
 
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('dateInput').value = today;
-        handleDateChange();
+        
+        // CANLI BULUT DİNLEYİCİSİ BAŞLAT
+        attachLiveDatabaseListener();
     }
 
     function switchCityHub() {
@@ -1035,18 +1067,17 @@
         else alert("⚠️ Lütfen bir telefon numarası girin!");
     }
 
-    // YETKİLİ SİLME MOTORU (KULLANICI BAZLI KİLİT)
     function deleteRow(btn) {
         const tr = btn.closest('tr');
         const salesRepInput = tr.querySelector('.cell-salesrep');
         const salesRepName = salesRepInput ? salesRepInput.value.trim() : '';
 
-        // Yetki Kontrolü: Furkan (Admin) herkesinkini, diğerleri sadece kendisininkini silebilir
         if (currentUser.isAdmin || salesRepName.toLowerCase() === currentUser.name.toLowerCase()) {
             tr.remove();
             reindexRows();
             updateRowCount();
             updateFullMapRoute();
+            saveToCloud(true); // Otomatik bulutta da güncelle
         } else {
             alert(`⚠️ Sadece kendi eklediğiniz müşterileri silebilirsiniz!\n\nBu müşteri (${salesRepName}) Temsilcisine aittir.`);
         }
@@ -1148,6 +1179,7 @@
         rows.forEach(r => tbody.appendChild(r));
         reindexRows();
         updateFullMapRoute();
+        saveToCloud(true);
         alert(`⚡ ${cityConfigs[currentCity].depot} çıkışlı rota en verimli mesafeye göre sıralandı!`);
     }
 
@@ -1182,6 +1214,67 @@
         window.open(url, '_blank');
     }
 
+    /* FIREBASE CANLI BULUT SENKRONİZASYON MOTORU */
+    function attachLiveDatabaseListener() {
+        const selectedDate = document.getElementById('dateInput').value;
+        if (!selectedDate) return;
+
+        const path = `montaj_${currentCity}/${selectedDate}`;
+        
+        db.ref(path).on('value', (snapshot) => {
+            const data = snapshot.val();
+            document.getElementById('tableBody').innerHTML = '';
+
+            if (data) {
+                document.getElementById('plateInput').value = data.plate || '';
+                document.getElementById('leaderInput').value = data.leader || '';
+                document.getElementById('memberInput').value = data.member || '';
+                updateTitle();
+                if (data.rows && data.rows.length > 0) {
+                    data.rows.forEach(r => addRow(r));
+                } else {
+                    addRow();
+                }
+            } else {
+                document.getElementById('plateInput').value = '';
+                updateTitle();
+                addRow();
+            }
+            updateFullMapRoute();
+        });
+    }
+
+    function handleDateChange() {
+        attachLiveDatabaseListener();
+    }
+
+    function saveToCloud(silent = false) {
+        const selectedDate = document.getElementById('dateInput').value;
+        const rows = [];
+        document.querySelectorAll('#tableBody tr').forEach(tr => {
+            const inputs = tr.querySelectorAll('input');
+            rows.push({
+                orderNo: inputs[0].value, phone: inputs[1].value, customer: inputs[2].value,
+                time: inputs[3].value, stockCode: inputs[4].value, stockName: inputs[5].value,
+                configCode: inputs[6].value, config: inputs[7].value, qty: inputs[8].value,
+                pkg: inputs[9].value, volume: inputs[10].value, address: inputs[11].value,
+                desc: inputs[12].value, rtt: inputs[13].value, salesRep: inputs[14].value, status: inputs[15].value
+            });
+        });
+
+        const payload = {
+            plate: document.getElementById('plateInput').value, leader: document.getElementById('leaderInput').value,
+            member: document.getElementById('memberInput').value, date: selectedDate, city: currentCity, rows: rows
+        };
+
+        const path = `montaj_${currentCity}/${selectedDate}`;
+        db.ref(path).set(payload);
+
+        if (!silent) {
+            alert(`✅ ${cityConfigs[currentCity].name} — ${selectedDate} tarihli program canlı bulut veritabanına kaydedildi!`);
+        }
+    }
+
     function renderMonthFolders() {
         const grid = document.getElementById('monthsGrid');
         grid.innerHTML = '';
@@ -1209,79 +1302,31 @@
         daysGrid.innerHTML = '';
         container.style.display = 'block';
 
-        let found = false;
-        const prefix = `montaj_${currentCity}_`;
+        db.ref(`montaj_${currentCity}`).once('value', (snapshot) => {
+            const data = snapshot.val();
+            let found = false;
 
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key.startsWith(prefix)) {
-                const dateStr = key.replace(prefix, '');
-                const dateObj = new Date(dateStr);
-                if (dateObj.getMonth() === monthIndex) {
-                    found = true;
-                    const btn = document.createElement('button');
-                    btn.className = 'day-excel-btn';
-                    btn.innerHTML = `📊 ${dateStr}.xlsx`;
-                    btn.onclick = () => {
-                        document.getElementById('dateInput').value = dateStr;
-                        handleDateChange();
-                    };
-                    daysGrid.appendChild(btn);
-                }
+            if (data) {
+                Object.keys(data).forEach(dateStr => {
+                    const dateObj = new Date(dateStr);
+                    if (dateObj.getMonth() === monthIndex) {
+                        found = true;
+                        const btn = document.createElement('button');
+                        btn.className = 'day-excel-btn';
+                        btn.innerHTML = `📊 ${dateStr}.xlsx`;
+                        btn.onclick = () => {
+                            document.getElementById('dateInput').value = dateStr;
+                            handleDateChange();
+                        };
+                        daysGrid.appendChild(btn);
+                    }
+                });
             }
-        }
 
-        if (!found) {
-            daysGrid.innerHTML = `<span style="font-size:0.75rem; color:var(--text-muted);">Bu ay için kaydedilmiş gün bulunamadı.</span>`;
-        }
-    }
-
-    function handleDateChange() {
-        const selectedDate = document.getElementById('dateInput').value;
-        const key = `montaj_${currentCity}_${selectedDate}`;
-        const savedData = localStorage.getItem(key);
-        document.getElementById('tableBody').innerHTML = '';
-
-        if (savedData) {
-            const parsed = JSON.parse(savedData);
-            document.getElementById('plateInput').value = parsed.plate || '';
-            document.getElementById('leaderInput').value = parsed.leader || '';
-            document.getElementById('memberInput').value = parsed.member || '';
-            updateTitle();
-            if (parsed.rows && parsed.rows.length > 0) parsed.rows.forEach(r => addRow(r));
-            else addRow();
-        } else {
-            document.getElementById('plateInput').value = '';
-            updateTitle();
-            addRow();
-        }
-    }
-
-    function saveToCloud() {
-        const selectedDate = document.getElementById('dateInput').value;
-        const rows = [];
-        document.querySelectorAll('#tableBody tr').forEach(tr => {
-            const inputs = tr.querySelectorAll('input');
-            rows.push({
-                orderNo: inputs[0].value, phone: inputs[1].value, customer: inputs[2].value,
-                time: inputs[3].value, stockCode: inputs[4].value, stockName: inputs[5].value,
-                configCode: inputs[6].value, config: inputs[7].value, qty: inputs[8].value,
-                pkg: inputs[9].value, volume: inputs[10].value, address: inputs[11].value,
-                desc: inputs[12].value, rtt: inputs[13].value, salesRep: inputs[14].value, status: inputs[15].value
-            });
+            if (!found) {
+                daysGrid.innerHTML = `<span style="font-size:0.75rem; color:var(--text-muted);">Bu ay için kaydedilmiş gün bulunamadı.</span>`;
+            }
         });
-
-        const payload = {
-            plate: document.getElementById('plateInput').value, leader: document.getElementById('leaderInput').value,
-            member: document.getElementById('memberInput').value, date: selectedDate, city: currentCity, rows: rows
-        };
-
-        const key = `montaj_${currentCity}_${selectedDate}`;
-        localStorage.setItem(key, JSON.stringify(payload));
-        alert(`✅ ${cityConfigs[currentCity].name} — ${selectedDate} tarihli program başarıyla kaydedildi!`);
-        
-        const d = new Date(selectedDate);
-        selectMonthFolder(d.getMonth(), monthNames[d.getMonth()]);
     }
 
     function exportToExcel() {
