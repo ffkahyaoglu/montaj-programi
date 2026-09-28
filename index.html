@@ -3,792 +3,400 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anadolu Araç Yükleme ve Montaj Rota Planlayıcı</title>
-    <!-- Leaflet CSS & JS -->
+    <title>Anadolu Araç Yükleme & Montaj Programı (Faz 1.1)</title>
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- SheetJS (Excel Çıktısı İçin) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { margin: 0; padding: 15px; background-color: #f1f5f9; color: #1e293b; }
-        
-        .header-title { background: linear-gradient(90deg, #0284c7, #0369a1); color: white; text-align: center; padding: 12px; font-weight: bold; font-size: 20px; border-radius: 8px 8px 0 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .top-info-bar { display: flex; gap: 15px; background: white; padding: 15px; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .info-group { display: flex; flex-direction: column; flex: 1; min-width: 150px; }
-        .info-group label { font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 4px; text-transform: uppercase; }
-        .info-group input { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; color: #0f172a; }
-        
-        .main-container { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
-        .table-container { flex: 3; min-width: 700px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow-x: auto; }
-        .map-container { flex: 2; min-width: 380px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
-        
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        th, td { border: 1px solid #cbd5e1; padding: 5px; text-align: center; }
-        th { background-color: #f8fafc; color: #334155; font-weight: bold; }
-        td input, td select { width: 100%; border: none; background: transparent; font-size: 11px; padding: 3px; border-radius: 3px; }
-        td input:focus, td select:focus { outline: 2px solid #0284c7; background: white; }
-        
-        .customer-col { background-color: #fef08a; font-weight: bold; }
-        
-        .btn-group { display: flex; gap: 8px; margin-top: 10px; }
-        .btn { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 5px; justify-content: center; }
-        .btn-add { background-color: #16a34a; color: white; }
-        .btn-add:hover { background-color: #15803d; }
-        .btn-route { background-color: #0284c7; color: white; width: 100%; padding: 12px; font-size: 14px; margin-top: 10px; }
-        .btn-route:hover { background-color: #0369a1; }
-        .btn-gmaps { background-color: #ea4335; color: white; flex: 1; }
-        .btn-yandex { background-color: #ffcc00; color: #000; flex: 1; }
-        .btn-delete { background-color: #ef4444; color: white; border-radius: 4px; padding: 3px 8px; cursor: pointer; }
-        .btn-move { background-color: #94a3b8; color: white; padding: 2px 5px; cursor: pointer; border-radius: 3px; }
-        
-        #map { height: 420px; width: 100%; border-radius: 6px; margin-top: 10px; border: 1px solid #e2e8f0; }
-        
-        .summary-bar { margin-top: 15px; padding: 10px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; display: flex; gap: 20px; font-weight: bold; font-size: 12px; color: #334155; }
-        .summary-item span { color: #0284c7; }
-        
-        .number-icon {
-            background-color: #0284c7;
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #f59e0b;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --border: #cbd5e1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Üst Bar: Oturum Bilgisi */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0f172a;
             color: white;
-            border-radius: 50%;
-            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .user-badge {
+            background: #22c55e;
+            color: black;
+            padding: 3px 8px;
+            border-radius: 12px;
             font-weight: bold;
-            text-align: center;
-            line-height: 24px;
-            font-size: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            font-size: 0.8rem;
+        }
+
+        /* Başlık Kartı */
+        .header-card {
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header-card h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Bilgi Form Kartı */
+        .info-card {
+            background: #e2e8f0;
+            padding: 15px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            border-bottom: 2px solid #94a3b8;
+        }
+
+        .info-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-group label {
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #0f172a;
+        }
+
+        .info-group input {
+            padding: 6px 10px;
+            border: 1px solid #94a3b8;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* İşlem Butonları */
+        .action-bar {
+            background: white;
+            padding: 10px 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary { background: var(--primary-light); color: white; }
+        .btn-success { background: #16a34a; color: white; }
+        .btn-excel { background: #15803d; color: white; }
+        .btn-warning { background: var(--secondary); color: black; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* Ana Düzen (Tablo ve Harita) */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout { grid-template-columns: 1fr; }
+        }
+
+        /* Tablo Tasarımı */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            overflow-x: auto;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background: #0f172a;
+            color: white;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        td {
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:nth-child(even) { background-color: #f8fafc; }
+
+        input.cell-input {
+            width: 95%;
+            padding: 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        input.cell-customer {
+            background-color: #fef08a; /* Orijinal Sarı Vurgu */
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        /* Harita Kartı */
+        .map-card {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            height: 520px;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 6px;
         }
     </style>
 </head>
 <body>
 
-    <div class="header-title" id="headerTitle">06 CHA 799_Anadolu Araç Yükleme Tablosu</div>
-    
-    <div class="top-info-bar">
-        <div class="info-group">
-            <label>Araç Plaka No</label>
-            <input type="text" id="plaka" value="06 CHA 799" onchange="updateTitle()">
+<div class="container">
+    <!-- Üst Bar: Oturum & Kayıt Takibi -->
+    <div class="top-bar">
+        <div>
+            <span>🔐 Oturum: <strong>Operasyon Yöneticisi</strong></span>
+            <span class="user-badge">Aktif</span>
         </div>
-        <div class="info-group">
-            <label>Takım Lideri (Ad/Soyad)</label>
-            <input type="text" id="lider" value="Ahmet Yılmaz">
-        </div>
-        <div class="info-group">
-            <label>Takım Üyesi (Ad/Soyad)</label>
-            <input type="text" id="uye" value="Mehmet Kaya">
-        </div>
-        <div class="info-group">
-            <label>Tarih</label>
-            <input type="date" id="tarih">
+        <div id="lastSavedInfo">
+            Son Güncelleme: <em>Henüz Kaydedilmedi</em>
         </div>
     </div>
 
-    <div class="main-container">
-        <!-- Tablo Alanı -->
+    <!-- Dinamik Başlık Kartı -->
+    <div class="header-card">
+        <h2 id="displayTitle">ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI</h2>
+        <div>
+            <span style="font-size:0.85rem; background:rgba(255,255,255,0.2); padding:4px 10px; border-radius:12px;">
+                Müşteri Kapasitesi: <strong id="rowCountDisplay">0</strong> / 7
+            </span>
+        </div>
+    </div>
+
+    <!-- Bilgi Form Kartı (Orijinal Başlıklar) -->
+    <div class="info-card">
+        <div class="info-group">
+            <label>Plaka:</label>
+            <input type="text" id="plateInput" value="" placeholder="Örn: 06 CHA 799" oninput="updateTitle()">
+        </div>
+        <div class="info-group">
+            <label>Takım Lideri:</label>
+            <input type="text" id="leaderInput" value="" placeholder="Ad Soyad">
+        </div>
+        <div class="info-group">
+            <label>Üye:</label>
+            <input type="text" id="memberInput" value="" placeholder="Ad Soyad">
+        </div>
+        <div class="info-group">
+            <label>Tarih:</label>
+            <input type="date" id="dateInput" onchange="handleDateChange()">
+        </div>
+    </div>
+
+    <!-- Aksiyon Butonları -->
+    <div class="action-bar">
+        <button class="btn btn-primary" onclick="addRow()">➕ Yeni Müşteri Ekle</button>
+        <button class="btn btn-success" onclick="saveToCloud()">☁️ Günü Kaydet</button>
+        <button class="btn btn-excel" onclick="exportToExcel()">📊 Excel (XLSX) İndir</button>
+        <button class="btn btn-warning" onclick="openNav('google')">🗺️ Google Rota</button>
+        <button class="btn btn-warning" onclick="openNav('yandex')">🟡 Yandex Rota</button>
+    </div>
+
+    <!-- Ana İçerik -->
+    <div class="main-layout">
+        <!-- Orijinal Sütun Yapısına Sahip Tablo -->
         <div class="table-container">
             <table id="programTable">
                 <thead>
                     <tr>
-                        <th style="width: 40px;">Sıra</th>
+                        <th style="width: 30px;">#</th>
                         <th>Sipariş No</th>
+                        <th>Müşteri Adı</th>
                         <th>Telefon</th>
-                        <th style="background-color: #fef08a; color: #854d0e;">Müşteri Adı</th>
-                        <th>Saat</th>
-                        <th>Stok Kodu</th>
-                        <th>Stok Adı</th>
-                        <th>Konfig Kod</th>
-                        <th>Konfig</th>
-                        <th>Miktar</th>
-                        <th>Paket</th>
-                        <th>Hacim</th>
-                        <th style="min-width: 140px;">Adres (İlçe/Mahalle/Sokak)</th>
-                        <th>Açıklama</th>
-                        <th>RTT</th>
-                        <th>Satış Temsilcisi</th>
-                        <th>Durum</th>
-                        <th style="width: 60px;">İşlem</th>
+                        <th>Adres / İlçe</th>
+                        <th>Montaj / Ürün Notu</th>
+                        <th style="width: 35px;">Sil</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    <tr>
-                        <td>
-                            <button class="btn-move" onclick="moveRow(this, -1)">▲</button>
-                            <button class="btn-move" onclick="moveRow(this, 1)">▼</button>
-                        </td>
-                        <td><input type="text" value="1001"></td>
-                        <td><input type="text" value="0532 000 0000"></td>
-                        <td class="customer-col"><input type="text" value="Ali Demir"></td>
-                        <td><input type="text" value="09:00"></td>
-                        <td><input type="text" value="STK01"></td>
-                        <td><input type="text" value="Koltuk Takımı"></td>
-                        <td><input type="text" value="KNF01"></td>
-                        <td><input type="text" value="Gri"></td>
-                        <td><input type="number" class="qty-input" value="1" onchange="calculateTotals()"></td>
-                        <td><input type="number" class="pkg-input" value="3" onchange="calculateTotals()"></td>
-                        <td><input type="text" class="vol-input" value="2.5" onchange="calculateTotals()"></td>
-                        <td><input type="text" class="address-input" value="Kızılay, Çankaya, Ankara"></td>
-                        <td><input type="text" value="Asansör var"></td>
-                        <td><input type="text" value="-"></td>
-                        <td><input type="text" value="Canan Y."></td>
-                        <td>
-                            <select onchange="calculateTotals()">
-                                <option>Hazırlanıyor</option>
-                                <option>Yolda</option>
-                                <option>Tamamlandı</option>
-                            </select>
-                        </td>
-                        <td><button class="btn-delete" onclick="deleteRow(this)">X</button></td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button class="btn-move" onclick="moveRow(this, -1)">▲</button>
-                            <button class="btn-move" onclick="moveRow(this, 1)">▼</button>
-                        </td>
-                        <td><input type="text" value="1002"></td>
-                        <td><input type="text" value="0533 000 0000"></td>
-                        <td class="customer-col"><input type="text" value="Ayşe Yılmaz"></td>
-                        <td><input type="text" value="11:00"></td>
-                        <td><input type="text" value="STK02"></td>
-                        <td><input type="text" value="Yemek Masası"></td>
-                        <td><input type="text" value="KNF02"></td>
-                        <td><input type="text" value="Ahşap"></td>
-                        <td><input type="number" class="qty-input" value="1" onchange="calculateTotals()"></td>
-                        <td><input type="number" class="pkg-input" value="1" onchange="calculateTotals()"></td>
-                        <td><input type="text" class="vol-input" value="1.0" onchange="calculateTotals()"></td>
-                        <td><input type="text" class="address-input" value="Batikent, Yenimahalle, Ankara"></td>
-                        <td><input type="text" value="Zil arızalı"></td>
-                        <td><input type="text" value="-"></td>
-                        <td><input type="text" value="Murat K."></td>
-                        <td>
-                            <select onchange="calculateTotals()">
-                                <option>Hazırlanıyor</option>
-                                <option>Yolda</option>
-                                <option>Tamamlandı</option>
-                            </select>
-                        </td>
-                        <td><button class="btn-delete" onclick="deleteRow(this)">X</button></td>
-                    </tr>
+                    <!-- Dinamik Satırlar -->
                 </tbody>
             </table>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                <button class="btn btn-add" onclick="addRow()">+ Yeni Müşteri / Sipariş Ekle</button>
-            </div>
-
-            <div class="summary-bar">
-                <div class="summary-item">Toplam Sipariş: <span id="totalOrders">2</span></div>
-                <div class="summary-item">Toplam Miktar: <span id="totalQty">2</span></div>
-                <div class="summary-item">Toplam Paket: <span id="totalPkg">4</span></div>
-                <div class="summary-item">Toplam Hacim: <span id="totalVol">3.5</span> m³</div>
-            </div>
         </div>
 
-        <!-- Harita Alanı -->
-        <div class="map-container">
-            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #0f172a;">Günlük Montaj Rotası</h3>
-            <button class="btn btn-route" onclick="plotRoute()">Haritada Göster ve Rotala</button>
-            
-            <div class="btn-group">
-                <button class="btn btn-gmaps" onclick="openNav('gmaps')"> Google Maps'te Aç</button>
-                <button class="btn btn-yandex" onclick="openNav('yandex')"> Yandex Navigasyon</button>
-            </div>
-
+        <!-- Harita Panel -->
+        <div class="map-card">
             <div id="map"></div>
-            <div id="statusMessage" style="margin-top: 8px; font-size: 11px; color: #64748b;"></div>
         </div>
     </div>
+</div>
 
-    <script>
-        var map = L.map('map').setView([39.9334, 32.8597], 11);
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    let map, markers = [];
+    const MAX_CAPACITY = 7; // KESİN 7 MÜŞTERİ SINIRI
+
+    window.onload = function() {
+        initMap();
+        
+        // Bugünün Tarihini Varsayılan Yap
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('dateInput').value = today;
+
+        // Başlangıçta 1 Tane Boş Müşteri Satırı Ekle
+        addRow();
+    };
+
+    function initMap() {
+        map = L.map('map').setView([39.9334, 32.8597], 10); // Ankara
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
         }).addTo(map);
+    }
 
-        var markers = [];
-        var routeLine = null;
+    // Plaka Girildikçe Başlığı Güncelle
+    function updateTitle() {
+        const plate = document.getElementById('plateInput').value.trim();
+        const titleElem = document.getElementById('displayTitle');
+        if (plate) {
+            titleElem.innerText = `${plate.toUpperCase()} _ ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI`;
+        } else {
+            titleElem.innerText = `ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI`;
+        }
+    }
 
-        function updateTitle() {
-            var plaka = document.getElementById('plaka').value;
-            document.getElementById('headerTitle').innerText = plaka + "_Anadolu Araç Yükleme Tablosu";
+    // KESİN 7 SATIR SINIRLI MÜŞTERİ EKLEME
+    function addRow(data = {}) {
+        const tbody = document.getElementById('tableBody');
+        const currentCount = tbody.getElementsByTagName('tr').length;
+
+        // 7 MÜŞTERİ ENGELİ
+        if (currentCount >= MAX_CAPACITY) {
+            alert(`⚠️ Araç Yükleme Kapasite Sınırı (7 Müşteri) Doldu!\n\nYeni sipariş eklemek için lütfen mevcut satırlardan birini silin.`);
+            return;
         }
 
-        function addRow() {
-            var tbody = document.getElementById('tableBody');
-            var newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td>
-                    <button class="btn-move" onclick="moveRow(this, -1)">▲</button>
-                    <button class="btn-move" onclick="moveRow(this, 1)">▼</button>
-                </td>
-                <td><input type="text"></td>
-                <td><input type="text"></td>
-                <td class="customer-col"><input type="text"></td>
-                <td><input type="text"></td>
-                <td><input type="text"></td>
-                <td><input type="text"></td>
-                <td><input type="text"></td>
-                <td><input type="text"></td>
-                <td><input type="number" class="qty-input" value="1" onchange="calculateTotals()"></td>
-                <td><input type="number" class="pkg-input" value="1" onchange="calculateTotals()"></td>
-                <td><input type="text" class="vol-input" value="0.5" onchange="calculateTotals()"></td>
-                <td><input type="text" class="address-input" placeholder="Örn: Kadıköy, İstanbul"></td>
-                <td><input type="text"></td>
-                <td><input type="text"></td>
-                <td><input type="text"></td>
-                <td>
-                    <select onchange="calculateTotals()">
-                        <option>Hazırlanıyor</option>
-                        <option>Yolda</option>
-                        <option>Tamamlandı</option>
-                    </select>
-                </td>
-                <td><button class="btn-delete" onclick="deleteRow(this)">X</button></td>
-            `;
-            tbody.appendChild(newRow);
-            calculateTotals();
-        }
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${currentCount + 1}</strong></td>
+            <td><input type="text" class="cell-input" value="${data.orderNo || ''}" placeholder="Sipariş No"></td>
+            <td><input type="text" class="cell-input cell-customer" value="${data.customer || ''}" placeholder="Müşteri Adı"></td>
+            <td><input type="text" class="cell-input" value="${data.phone || ''}" placeholder="Telefon"></td>
+            <td><input type="text" class="cell-input" value="${data.address || ''}" placeholder="Adres / İlçe" onchange="geocodeRow(this)"></td>
+            <td><input type="text" class="cell-input" value="${data.note || ''}" placeholder="Montaj notu"></td>
+            <td><button class="btn btn-danger" style="padding: 2px 6px;" onclick="deleteRow(this)">X</button></td>
+        `;
 
-        function deleteRow(btn) {
-            var row = btn.parentNode.parentNode;
-            row.parentNode.removeChild(row);
-            calculateTotals();
-        }
+        tbody.appendChild(tr);
+        updateRowCount();
+    }
 
-        function moveRow(btn, direction) {
-            var row = btn.parentNode.parentNode;
-            var sibling = direction === -1 ? row.previousElementSibling : row.nextElementSibling;
-            if (sibling) {
-                row.parentNode.insertBefore(direction === -1 ? row : sibling, direction === -1 ? sibling : row);
-            }
-        }
+    // Satır Sil
+    function deleteRow(btn) {
+        btn.closest('tr').remove();
+        reindexRows();
+        updateRowCount();
+    }
 
-        function calculateTotals() {
-            var rows = document.querySelectorAll('#tableBody tr');
-            var totalOrders = rows.length;
-            var totalQty = 0;
-            var totalPkg = 0;
-            var totalVol = 0;
+    // Numaraları Yeniden Sırala
+    function reindexRows() {
+        document.querySelectorAll('#tableBody tr').forEach((tr, index) => {
+            tr.cells[0].innerHTML = `<strong>${index + 1}</strong>`;
+        });
+    }
 
-            rows.forEach(row => {
-                var qty = parseFloat(row.querySelector('.qty-input')?.value) || 0;
-                var pkg = parseFloat(row.querySelector('.pkg-input')?.value) || 0;
-                var vol = parseFloat(row.querySelector('.vol-input')?.value) || 0;
+    // Sayaç Güncelle
+    function updateRowCount() {
+        const count = document.querySelectorAll('#tableBody tr').length;
+        document.getElementById('rowCountDisplay').innerText = count;
+    }
 
-                totalQty += qty;
-                totalPkg += pkg;
-                totalVol += vol;
-            });
+    // Tarih Değiştiğinde Kayıt Kontrolü
+    function handleDateChange() {
+        const selectedDate = document.getElementById('dateInput').value;
+        const savedData = localStorage.getItem(`montaj_${selectedDate}`);
 
-            document.getElementById('totalOrders').innerText = totalOrders;
-            document.getElementById('totalQty').innerText = totalQty;
-            document.getElementById('totalPkg').innerText = totalPkg;
-            document.getElementById('totalVol').innerText = totalVol.toFixed(1);
-        }
+        document.getElementById('tableBody').innerHTML = '';
 
-        // Engellere takılmayan ArcGIS Geocoding Servisi
-        async function geocodeAddress(address) {
-            try {
-                let response = await fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(address)}&maxLocations=1`);
-                let data = await response.json();
-                if (data && data.candidates && data.candidates.length > 0) {
-                    let location = data.candidates[0].location;
-                    return [location.y, location.x];
-                }
-            } catch (e) {
-                console.error("ArcGIS Hata:", e);
-            }
-            return null;
-        }
+        if (savedData) {
+            const parsed = JSON.parse(savedData);
+            document.getElementById('plateInput').value = parsed.plate || '';
+            document.getElementById('leaderInput').value = parsed.leader || '';
+            document.getElementById('memberInput').value = parsed.member || '';
+            updateTitle();
 
-        async function plotRoute() {
-            var statusDiv = document.getElementById('statusMessage');
-            statusDiv.innerText = "Adresler haritada aranıyor...";
-
-            markers.forEach(m => map.removeLayer(m));
-            markers = [];
-            if (routeLine) map.removeLayer(routeLine);
-
-            var addressInputs = document.querySelectorAll('.address-input');
-            var coordinates = [];
-            var foundCount = 0;
-
-            for (let i = 0; i < addressInputs.length; i++) {
-                let address = addressInputs[i].value.trim();
-                if (address) {
-                    let coords = await geocodeAddress(address);
-                    if (coords) {
-                        coordinates.push(coords);
-                        foundCount++;
-
-                        let numberIcon = L.divIcon({
-                            className: 'custom-div-icon',
-                            html: `<div class="number-icon">${i + 1}</div>`,
-                            iconSize: [24, 24],
-                            iconAnchor: [12, 12]
-                        });
-
-                        let marker = L.marker(coords, { icon: numberIcon }).addTo(map)
-                            .bindPopup(`<b>Durak ${i + 1}</b><br>${address}`);
-                        markers.push(marker);
-                    }
-                }
-            }
-
-            if (coordinates.length > 0) {
-                routeLine = L.polyline(coordinates, { color: '#0284c7', weight: 4, opacity: 0.8, dashArray: '8, 8' }).addTo(map);
-                map.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
-                statusDiv.innerText = `${foundCount} adet adres başarıyla rotalandı.`;
+            if (parsed.rows && parsed.rows.length > 0) {
+                parsed.rows.forEach(r => addRow(r));
             } else {
-                statusDiv.innerText = "Lütfen geçerli adresler giriniz.";
+                addRow();
             }
-        }
-
-        function openNav(type) {
-            var addressInputs = document.querySelectorAll('.address-input');
-            var addresses = [];
-
-            addressInputs.forEach(input => {
-                let val = input.value.trim();
-                if (val) addresses.push(val);
-            });
-
-            if (addresses.length === 0) {
-                alert("Lütfen en az bir adres giriniz!");
-                return;
-            }
-
-            if (type === 'gmaps') {
-                let origin = encodeURIComponent(addresses[0]);
-                let destination = encodeURIComponent(addresses[addresses.length - 1]);
-                let waypoints = addresses.slice(1, -1).map(a => encodeURIComponent(a)).join('|');
-                
-                let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
-                if (waypoints) url += `&waypoints=${waypoints}`;
-                
-                window.open(url, '_blank');
-            } else if (type === 'yandex') {
-                let query = addresses.map(a => encodeURIComponent(a)).join('~');
-                let url = `https://yandex.com.tr/maps/?rtext=${query}&rtt=auto`;
-                window.open(url, '_blank');
-            }
-        }
-
-        document.getElementById('tarih').valueAsDate = new Date();
-        calculateTotals();
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anadolu Araç Yükleme & Montaj Programı (Faz 1)</title>
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- SheetJS (Excel Çıktısı İçin) -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <style>
-        :root {
-            --primary: #1e3a8a;
-            --primary-light: #3b82f6;
-            --secondary: #f59e0b;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --border: #e2e8f0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 15px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        /* Üst Header / Giriş Bilgisi */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #0f172a;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-        }
-
-        .user-badge {
-            background: #22c55e;
-            color: black;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 0.8rem;
-        }
-
-        /* Başlık Kartı */
-        .header-card {
-            background: var(--primary);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px 8px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .header-card h2 {
-            margin: 0;
-            font-size: 1.3rem;
-        }
-
-        /* Bilgi Form Kartı */
-        .info-card {
-            background: #cbd5e1;
-            padding: 15px 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
-            border-bottom: 2px solid #94a3b8;
-        }
-
-        .info-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .info-group label {
-            font-weight: bold;
-            font-size: 0.9rem;
-            color: #0f172a;
-        }
-
-        .info-group input {
-            padding: 6px 10px;
-            border: 1px solid #94a3b8;
-            border-radius: 4px;
-            font-weight: 500;
-        }
-
-        /* Butonlar Barı */
-        .action-bar {
-            background: white;
-            padding: 10px 20px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .btn {
-            padding: 8px 14px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-
-        .btn-primary { background: var(--primary-light); color: white; }
-        .btn-success { background: #16a34a; color: white; }
-        .btn-excel { background: #15803d; color: white; }
-        .btn-warning { background: var(--secondary); color: black; }
-        .btn-danger { background: #dc2626; color: white; }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-
-        /* Ana Düzen (Tablo ve Harita) */
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 450px;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        @media (max-width: 1024px) {
-            .main-layout { grid-template-columns: 1fr; }
-        }
-
-        /* Tablo Stilleri */
-        .table-container {
-            background: white;
-            border-radius: 8px;
-            overflow-x: auto;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-        }
-
-        th {
-            background: #1e293b;
-            color: white;
-            padding: 10px 8px;
-            text-align: left;
-            font-weight: 600;
-        }
-
-        td {
-            padding: 8px;
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
-        }
-
-        tr:nth-child(even) { background-color: #f8fafc; }
-
-        input.cell-input {
-            width: 90%;
-            padding: 5px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-        }
-
-        input.cell-customer {
-            background-color: #fef08a; /* Sarı vurgu */
-            font-weight: bold;
-        }
-
-        /* Harita Kapsayıcı */
-        .map-card {
-            background: white;
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            height: 550px;
-        }
-
-        #map {
-            width: 100%;
-            height: 100%;
-            border-radius: 6px;
-        }
-
-        .capacity-badge {
-            background: #ef4444;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            display: none;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <!-- Üst Bar: Kullanıcı & Takip -->
-    <div class="top-bar">
-        <div>
-            <span>🔐 Oturum: <strong>Operasyon Yöneticisi</strong></span>
-            <span class="user-badge">Aktif</span>
-        </div>
-        <div id="lastSavedInfo">
-            Son Güncelleme: <em>Henüz Kaydedilmedi</em>
-        </div>
-    </div>
-
-    <!-- Başlık / Plaka Kartı -->
-    <div class="header-card">
-        <h2 id="displayTitle">06 CHA 799 _ ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI</h2>
-        <div>
-            <span style="font-size:0.85rem; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:4px;">
-                Maksimum Kapasite: <strong id="rowCountDisplay">1</strong> / 7 Müşteri
-            </span>
-        </div>
-    </div>
-
-    <!-- Bilgi Kartı -->
-    <div class="info-card">
-        <div class="info-group">
-            <label>Plaka:</label>
-            <input type="text" id="plateInput" value="06 CHA 799" oninput="updateTitle()">
-        </div>
-        <div class="info-group">
-            <label>Takım Lideri:</label>
-            <input type="text" id="leaderInput" value="HAKAN SAKARYA">
-        </div>
-        <div class="info-group">
-            <label>Üye:</label>
-            <input type="text" id="memberInput" value="M.ALİ">
-        </div>
-        <div class="info-group">
-            <label>Tarih Seç:</label>
-            <input type="date" id="dateInput" onchange="handleDateChange()">
-        </div>
-    </div>
-
-    <!-- İşlem Butonları -->
-    <div class="action-bar">
-        <button class="btn btn-primary" onclick="addRow()">➕ Yeni Müşteri/Sipariş Ekle</button>
-        <button class="btn btn-success" onclick="saveToCloud()">☁️ Günü Kaydet</button>
-        <button class="btn btn-excel" onclick="exportToExcel()">📊 Excel (XLSX) İndir</button>
-        <button class="btn btn-warning" onclick="openNav('google')">🗺️ Google Rota</button>
-        <button class="btn btn-warning" onclick="openNav('yandex')">🟡 Yandex Rota</button>
-    </div>
-
-    <!-- Ana İçerik -->
-    <div class="main-layout">
-        <!-- Tablo -->
-        <div class="table-container">
-            <table id="programTable">
-                <thead>
-                    <tr>
-                        <th style="width: 30px;">#</th>
-                        <th>Sipariş No</th>
-                        <th>Müşteri Adı</th>
-                        <th>Telefon</th>
-                        <th>İlçe / Adres</th>
-                        <th>Ürün / Montaj Notu</th>
-                        <th style="width: 40px;">Sil</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <!-- Dinamik Satırlar -->
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Harita -->
-        <div class="map-card">
-            <div id="map"></div>
-        </div>
-    </div>
-</div>
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script>
-    // Global Değişkenler
-    let map, markers = [];
-    const MAX_CAPACITY = 7; // MÜŞTERİ KAPASİTE SINIRI
-
-    // Sayfa Yüklendiğinde
-    window.onload = function() {
-        initMap();
-        
-        // Bugünün Tarihini Ayarla
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('dateInput').value = today;
-
-        // Varsayılan Satır Ekle
-        loadDefaultTemplate();
-    };
-
-    // Harita Başlatma
-    function initMap() {
-        map = L.map('map').setView([39.9334, 32.8597], 10); // Ankara Merkez
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-    }
-
-    // Plaka Değiştiğinde Başlığı Güncelle
-    function updateTitle() {
-        const plate = document.getElementById('plateInput').value || '06 CHA 799';
-        document.getElementById('displayTitle').innerText = `${plate} _ ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI`;
-    }
-
-    // 7 Müşteri Sınırı Kontrolü ile Satır Ekleme
-    function addRow(data = {}) {
-        const tbody = document.getElementById('tableBody');
-        const currentRows = tbody.getElementsByTagName('tr').length;
-
-        // KAPASİTE KONTROLÜ
-        if (currentRows >= MAX_CAPACITY) {
-            alert(`⚠️ Araç Yükleme Kapasite Sınırına Ulaşıldı!\n\nMaksimum ${MAX_CAPACITY} müşteri ekleyebilirsiniz. Yeni sipariş eklemek için lütfen mevcut satırlardan birini silin.`);
-            return;
-        }
-
-        const rowCount = currentRows + 1;
-        const tr = document.createElement('tr');
-
-        tr.innerHTML = `
-            <td><strong>${rowCount}</strong></td>
-            <td><input type="text" class="cell-input" value="${data.orderNo || ''}" placeholder="Örn: 1042"></td>
-            <td><input type="text" class="cell-input cell-customer" value="${data.customer || ''}" placeholder="Müşteri Adı"></td>
-            <td><input type="text" class="cell-input" value="${data.phone || ''}" placeholder="05XX XXX XX XX"></td>
-            <td><input type="text" class="cell-input" value="${data.address || ''}" placeholder="İlçe / Adres" onchange="geocodeRow(this)"></td>
-            <td><input type="text" class="cell-input" value="${data.note || ''}" placeholder="Montaj detayları"></td>
-            <td><button class="btn btn-danger" style="padding: 2px 6px;" onclick="deleteRow(this)">X</button></td>
-        `;
-
-        tbody.appendChild(tr);
-        updateRowCount();
-    }
-
-    // Satır Silme
-    function deleteRow(btn) {
-        const tr = btn.closest('tr');
-        tr.remove();
-        reindexRows();
-        updateRowCount();
-    }
-
-    // Satır Numaralarını Yeniden Düzenleme
-    function reindexRows() {
-        const rows = document.querySelectorAll('#tableBody tr');
-        rows.forEach((tr, index) => {
-            tr.cells[0].innerHTML = `<strong>${index + 1}</strong>`;
-        });
-    }
-
-    // Sayaç Güncelleme
-    function updateRowCount() {
-        const count = document.querySelectorAll('#tableBody tr').length;
-        document.getElementById('rowCountDisplay').innerText = count;
-    }
-
-    // Varsayılan Şablon Yükle
-    function loadDefaultTemplate() {
-        document.getElementById('tableBody').innerHTML = '';
-        addRow({ orderNo: '2024-01', customer: 'AHMET YILMAZ', phone: '0532 000 0000', address: 'Çankaya Ankara', note: 'Koltuk Takımı Montajı' });
-    }
-
-    // DİNAMİK TAKVİM MANTIĞI (Kayıtsız Günler Boş Gelir)
-    function handleDateChange() {
-        const selectedDate = document.getElementById('dateInput').value;
-        const savedData = localStorage.getItem(`montaj_${selectedDate}`);
-
-        document.getElementById('tableBody').innerHTML = '';
-
-        if (savedData) {
-            // Kayıtlı Gün Varsa Yükle
-            const parsed = JSON.parse(savedData);
-            document.getElementById('plateInput').value = parsed.plate || '';
-            document.getElementById('leaderInput').value = parsed.leader || '';
-            document.getElementById('memberInput').value = parsed.member || '';
-            updateTitle();
-
-            parsed.rows.forEach(r => addRow(r));
-            alert(`${selectedDate} tarihine ait kaydedilmiş montaj programı yüklendi.`);
+            alert(`📅 ${selectedDate} tarihine ait kaydedilmiş program yüklendi.`);
         } else {
-            // Kayıt Yoksa Tertemiz/Boş Sayfa Aç
-            addRow(); // Sadece 1 boş satırla başla
-            alert(`${selectedDate} tarihi için henüz bir kayıt bulunmuyor. Yeni bir plan oluşturabilirsiniz.`);
+            document.getElementById('plateInput').value = '';
+            updateTitle();
+            addRow(); // Kayıt yoksa 1 boş satır aç
         }
     }
 
-    // Buluta / Yerel Depoya Kaydet
+    // Kaydet
     function saveToCloud() {
         const selectedDate = document.getElementById('dateInput').value;
         const rows = [];
@@ -814,27 +422,25 @@
         };
 
         localStorage.setItem(`montaj_${selectedDate}`, JSON.stringify(payload));
-        document.getElementById('lastSavedInfo').innerHTML = `Son Güncelleme: <strong>${payload.savedAt} (Operasyon Yöneticisi)</strong>`;
-        alert(`✅ ${selectedDate} tarihli montaj programı başarıyla kaydedildi!`);
+        document.getElementById('lastSavedInfo').innerHTML = `Son Güncelleme: <strong>${payload.savedAt}</strong>`;
+        alert(`✅ ${selectedDate} tarihli program başarıyla kaydedildi!`);
     }
 
-    // KURUMSAL EXCEL (XLSX) DIŞA AKTARIMI
+    // BİREBİR EXCEL (XLSX) DIŞA AKTARIMI
     function exportToExcel() {
-        const plate = document.getElementById('plateInput').value;
+        const plate = document.getElementById('plateInput').value || 'PLAKASIZ';
         const date = document.getElementById('dateInput').value;
         const leader = document.getElementById('leaderInput').value;
         const member = document.getElementById('memberInput').value;
 
-        // Excel Başlık ve Metadata Tablosu
         const excelData = [
             ["ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI"],
             ["Plaka:", plate, "Tarih:", date],
-            ["Takım Lideri:", leader, "Ekip Üyesi:", member],
-            [], // Boş Satır
-            ["Sıra", "Sipariş No", "Müşteri Adı", "Telefon", "Adres / İlçe", "Montaj Notu"]
+            ["Takım Lideri:", leader, "Üye:", member],
+            [],
+            ["Sıra", "Sipariş No", "Müşteri Adı", "Telefon", "Adres / İlçe", "Montaj / Ürün Notu"]
         ];
 
-        // Tablo Satırlarını Ekle
         document.querySelectorAll('#tableBody tr').forEach((tr, index) => {
             const inputs = tr.querySelectorAll('input');
             excelData.push([
@@ -847,567 +453,45 @@
             ]);
         });
 
-        // Workbook ve Sheet Oluşturma
         const ws = XLSX.utils.aoa_to_sheet(excelData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Montaj Programı");
 
-        // Excel Dosyasını İndir
         XLSX.writeFile(wb, `${plate}_Montaj_Programi_${date}.xlsx`);
     }
 
-    // Navigasyon Rota Linkleri
+    // GOOGLE & YANDEX ROTA BUTONLARI (ONARILDI)
     function openNav(type) {
         const addresses = [];
         document.querySelectorAll('#tableBody tr').forEach(tr => {
-            const addr = tr.querySelectorAll('input')[3].value;
-            if (addr.trim() !== '') addresses.push(encodeURIComponent(addr));
+            const addr = tr.querySelectorAll('input')[3].value.trim();
+            if (addr !== '') addresses.push(encodeURIComponent(addr));
         });
 
         if (addresses.length === 0) {
-            alert("Lütfen önce adres alanlarını doldurun!");
+            alert("⚠️ Lütfen önce en az bir müşteri için Adres / İlçe alanını doldurun!");
             return;
         }
 
         let url = "";
         if (type === 'google') {
-            url = `https://www.google.com/maps/dir/${addresses.join('/')}`;
+            // Google Maps Çoklu Durak Formatı
+            url = `https://www.google.com/maps/dir/?api=1&destination=${addresses[addresses.length - 1]}`;
+            if (addresses.length > 1) {
+                const waypoints = addresses.slice(0, -1).join('|');
+                url += `&waypoints=${waypoints}`;
+            }
         } else if (type === 'yandex') {
+            // Yandex Navigasyon Formatı
             url = `https://yandex.com.tr/harita/?rtext=${addresses.join('~')}&rtt=auto`;
         }
 
         window.open(url, '_blank');
     }
 
-    // Adres Geocoding (Harita İğnesi)
+    // Harita Geocoding
     function geocodeRow(input) {
-        const address = input.value;
-        if (!address) return;
-
-        fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(address)}&maxLocations=1`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.candidates && data.candidates.length > 0) {
-                    const loc = data.candidates[0].location;
-                    const marker = L.marker([loc.y, loc.x]).addTo(map)
-                        .bindPopup(`<b>${address}</b>`)
-                        .openPopup();
-                    markers.push(marker);
-                    map.setView([loc.y, loc.x], 12);
-                }
-            })
-            .catch(err => console.log("Adres bulunamadı:", err));
-    }
-</script>
-
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anadolu Araç Yükleme & Montaj Programı (Faz 1)</title>
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- SheetJS (Excel Çıktısı İçin) -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <style>
-        :root {
-            --primary: #1e3a8a;
-            --primary-light: #3b82f6;
-            --secondary: #f59e0b;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --border: #e2e8f0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 15px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        /* Üst Header / Giriş Bilgisi */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #0f172a;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-        }
-
-        .user-badge {
-            background: #22c55e;
-            color: black;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 0.8rem;
-        }
-
-        /* Başlık Kartı */
-        .header-card {
-            background: var(--primary);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px 8px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .header-card h2 {
-            margin: 0;
-            font-size: 1.3rem;
-        }
-
-        /* Bilgi Form Kartı */
-        .info-card {
-            background: #cbd5e1;
-            padding: 15px 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
-            border-bottom: 2px solid #94a3b8;
-        }
-
-        .info-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .info-group label {
-            font-weight: bold;
-            font-size: 0.9rem;
-            color: #0f172a;
-        }
-
-        .info-group input {
-            padding: 6px 10px;
-            border: 1px solid #94a3b8;
-            border-radius: 4px;
-            font-weight: 500;
-        }
-
-        /* Butonlar Barı */
-        .action-bar {
-            background: white;
-            padding: 10px 20px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .btn {
-            padding: 8px 14px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-
-        .btn-primary { background: var(--primary-light); color: white; }
-        .btn-success { background: #16a34a; color: white; }
-        .btn-excel { background: #15803d; color: white; }
-        .btn-warning { background: var(--secondary); color: black; }
-        .btn-danger { background: #dc2626; color: white; }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-
-        /* Ana Düzen (Tablo ve Harita) */
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 450px;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        @media (max-width: 1024px) {
-            .main-layout { grid-template-columns: 1fr; }
-        }
-
-        /* Tablo Stilleri */
-        .table-container {
-            background: white;
-            border-radius: 8px;
-            overflow-x: auto;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-        }
-
-        th {
-            background: #1e293b;
-            color: white;
-            padding: 10px 8px;
-            text-align: left;
-            font-weight: 600;
-        }
-
-        td {
-            padding: 8px;
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
-        }
-
-        tr:nth-child(even) { background-color: #f8fafc; }
-
-        input.cell-input {
-            width: 90%;
-            padding: 5px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-        }
-
-        input.cell-customer {
-            background-color: #fef08a; /* Sarı vurgu */
-            font-weight: bold;
-        }
-
-        /* Harita Kapsayıcı */
-        .map-card {
-            background: white;
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            height: 550px;
-        }
-
-        #map {
-            width: 100%;
-            height: 100%;
-            border-radius: 6px;
-        }
-
-        .capacity-badge {
-            background: #ef4444;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            display: none;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <!-- Üst Bar: Kullanıcı & Takip -->
-    <div class="top-bar">
-        <div>
-            <span>🔐 Oturum: <strong>Operasyon Yöneticisi</strong></span>
-            <span class="user-badge">Aktif</span>
-        </div>
-        <div id="lastSavedInfo">
-            Son Güncelleme: <em>Henüz Kaydedilmedi</em>
-        </div>
-    </div>
-
-    <!-- Başlık / Plaka Kartı -->
-    <div class="header-card">
-        <h2 id="displayTitle">06 CHA 799 _ ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI</h2>
-        <div>
-            <span style="font-size:0.85rem; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:4px;">
-                Maksimum Kapasite: <strong id="rowCountDisplay">1</strong> / 7 Müşteri
-            </span>
-        </div>
-    </div>
-
-    <!-- Bilgi Kartı -->
-    <div class="info-card">
-        <div class="info-group">
-            <label>Plaka:</label>
-            <input type="text" id="plateInput" value="06 CHA 799" oninput="updateTitle()">
-        </div>
-        <div class="info-group">
-            <label>Takım Lideri:</label>
-            <input type="text" id="leaderInput" value="HAKAN SAKARYA">
-        </div>
-        <div class="info-group">
-            <label>Üye:</label>
-            <input type="text" id="memberInput" value="M.ALİ">
-        </div>
-        <div class="info-group">
-            <label>Tarih Seç:</label>
-            <input type="date" id="dateInput" onchange="handleDateChange()">
-        </div>
-    </div>
-
-    <!-- İşlem Butonları -->
-    <div class="action-bar">
-        <button class="btn btn-primary" onclick="addRow()">➕ Yeni Müşteri/Sipariş Ekle</button>
-        <button class="btn btn-success" onclick="saveToCloud()">☁️ Günü Kaydet</button>
-        <button class="btn btn-excel" onclick="exportToExcel()">📊 Excel (XLSX) İndir</button>
-        <button class="btn btn-warning" onclick="openNav('google')">🗺️ Google Rota</button>
-        <button class="btn btn-warning" onclick="openNav('yandex')">🟡 Yandex Rota</button>
-    </div>
-
-    <!-- Ana İçerik -->
-    <div class="main-layout">
-        <!-- Tablo -->
-        <div class="table-container">
-            <table id="programTable">
-                <thead>
-                    <tr>
-                        <th style="width: 30px;">#</th>
-                        <th>Sipariş No</th>
-                        <th>Müşteri Adı</th>
-                        <th>Telefon</th>
-                        <th>İlçe / Adres</th>
-                        <th>Ürün / Montaj Notu</th>
-                        <th style="width: 40px;">Sil</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <!-- Dinamik Satırlar -->
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Harita -->
-        <div class="map-card">
-            <div id="map"></div>
-        </div>
-    </div>
-</div>
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script>
-    // Global Değişkenler
-    let map, markers = [];
-    const MAX_CAPACITY = 7; // MÜŞTERİ KAPASİTE SINIRI
-
-    // Sayfa Yüklendiğinde
-    window.onload = function() {
-        initMap();
-        
-        // Bugünün Tarihini Ayarla
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('dateInput').value = today;
-
-        // Varsayılan Satır Ekle
-        loadDefaultTemplate();
-    };
-
-    // Harita Başlatma
-    function initMap() {
-        map = L.map('map').setView([39.9334, 32.8597], 10); // Ankara Merkez
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-    }
-
-    // Plaka Değiştiğinde Başlığı Güncelle
-    function updateTitle() {
-        const plate = document.getElementById('plateInput').value || '06 CHA 799';
-        document.getElementById('displayTitle').innerText = `${plate} _ ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI`;
-    }
-
-    // 7 Müşteri Sınırı Kontrolü ile Satır Ekleme
-    function addRow(data = {}) {
-        const tbody = document.getElementById('tableBody');
-        const currentRows = tbody.getElementsByTagName('tr').length;
-
-        // KAPASİTE KONTROLÜ
-        if (currentRows >= MAX_CAPACITY) {
-            alert(`⚠️ Araç Yükleme Kapasite Sınırına Ulaşıldı!\n\nMaksimum ${MAX_CAPACITY} müşteri ekleyebilirsiniz. Yeni sipariş eklemek için lütfen mevcut satırlardan birini silin.`);
-            return;
-        }
-
-        const rowCount = currentRows + 1;
-        const tr = document.createElement('tr');
-
-        tr.innerHTML = `
-            <td><strong>${rowCount}</strong></td>
-            <td><input type="text" class="cell-input" value="${data.orderNo || ''}" placeholder="Örn: 1042"></td>
-            <td><input type="text" class="cell-input cell-customer" value="${data.customer || ''}" placeholder="Müşteri Adı"></td>
-            <td><input type="text" class="cell-input" value="${data.phone || ''}" placeholder="05XX XXX XX XX"></td>
-            <td><input type="text" class="cell-input" value="${data.address || ''}" placeholder="İlçe / Adres" onchange="geocodeRow(this)"></td>
-            <td><input type="text" class="cell-input" value="${data.note || ''}" placeholder="Montaj detayları"></td>
-            <td><button class="btn btn-danger" style="padding: 2px 6px;" onclick="deleteRow(this)">X</button></td>
-        `;
-
-        tbody.appendChild(tr);
-        updateRowCount();
-    }
-
-    // Satır Silme
-    function deleteRow(btn) {
-        const tr = btn.closest('tr');
-        tr.remove();
-        reindexRows();
-        updateRowCount();
-    }
-
-    // Satır Numaralarını Yeniden Düzenleme
-    function reindexRows() {
-        const rows = document.querySelectorAll('#tableBody tr');
-        rows.forEach((tr, index) => {
-            tr.cells[0].innerHTML = `<strong>${index + 1}</strong>`;
-        });
-    }
-
-    // Sayaç Güncelleme
-    function updateRowCount() {
-        const count = document.querySelectorAll('#tableBody tr').length;
-        document.getElementById('rowCountDisplay').innerText = count;
-    }
-
-    // Varsayılan Şablon Yükle
-    function loadDefaultTemplate() {
-        document.getElementById('tableBody').innerHTML = '';
-        addRow({ orderNo: '2024-01', customer: 'AHMET YILMAZ', phone: '0532 000 0000', address: 'Çankaya Ankara', note: 'Koltuk Takımı Montajı' });
-    }
-
-    // DİNAMİK TAKVİM MANTIĞI (Kayıtsız Günler Boş Gelir)
-    function handleDateChange() {
-        const selectedDate = document.getElementById('dateInput').value;
-        const savedData = localStorage.getItem(`montaj_${selectedDate}`);
-
-        document.getElementById('tableBody').innerHTML = '';
-
-        if (savedData) {
-            // Kayıtlı Gün Varsa Yükle
-            const parsed = JSON.parse(savedData);
-            document.getElementById('plateInput').value = parsed.plate || '';
-            document.getElementById('leaderInput').value = parsed.leader || '';
-            document.getElementById('memberInput').value = parsed.member || '';
-            updateTitle();
-
-            parsed.rows.forEach(r => addRow(r));
-            alert(`${selectedDate} tarihine ait kaydedilmiş montaj programı yüklendi.`);
-        } else {
-            // Kayıt Yoksa Tertemiz/Boş Sayfa Aç
-            addRow(); // Sadece 1 boş satırla başla
-            alert(`${selectedDate} tarihi için henüz bir kayıt bulunmuyor. Yeni bir plan oluşturabilirsiniz.`);
-        }
-    }
-
-    // Buluta / Yerel Depoya Kaydet
-    function saveToCloud() {
-        const selectedDate = document.getElementById('dateInput').value;
-        const rows = [];
-        
-        document.querySelectorAll('#tableBody tr').forEach(tr => {
-            const inputs = tr.querySelectorAll('input');
-            rows.push({
-                orderNo: inputs[0].value,
-                customer: inputs[1].value,
-                phone: inputs[2].value,
-                address: inputs[3].value,
-                note: inputs[4].value
-            });
-        });
-
-        const payload = {
-            plate: document.getElementById('plateInput').value,
-            leader: document.getElementById('leaderInput').value,
-            member: document.getElementById('memberInput').value,
-            date: selectedDate,
-            savedAt: new Date().toLocaleString('tr-TR'),
-            rows: rows
-        };
-
-        localStorage.setItem(`montaj_${selectedDate}`, JSON.stringify(payload));
-        document.getElementById('lastSavedInfo').innerHTML = `Son Güncelleme: <strong>${payload.savedAt} (Operasyon Yöneticisi)</strong>`;
-        alert(`✅ ${selectedDate} tarihli montaj programı başarıyla kaydedildi!`);
-    }
-
-    // KURUMSAL EXCEL (XLSX) DIŞA AKTARIMI
-    function exportToExcel() {
-        const plate = document.getElementById('plateInput').value;
-        const date = document.getElementById('dateInput').value;
-        const leader = document.getElementById('leaderInput').value;
-        const member = document.getElementById('memberInput').value;
-
-        // Excel Başlık ve Metadata Tablosu
-        const excelData = [
-            ["ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI"],
-            ["Plaka:", plate, "Tarih:", date],
-            ["Takım Lideri:", leader, "Ekip Üyesi:", member],
-            [], // Boş Satır
-            ["Sıra", "Sipariş No", "Müşteri Adı", "Telefon", "Adres / İlçe", "Montaj Notu"]
-        ];
-
-        // Tablo Satırlarını Ekle
-        document.querySelectorAll('#tableBody tr').forEach((tr, index) => {
-            const inputs = tr.querySelectorAll('input');
-            excelData.push([
-                index + 1,
-                inputs[0].value,
-                inputs[1].value,
-                inputs[2].value,
-                inputs[3].value,
-                inputs[4].value
-            ]);
-        });
-
-        // Workbook ve Sheet Oluşturma
-        const ws = XLSX.utils.aoa_to_sheet(excelData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Montaj Programı");
-
-        // Excel Dosyasını İndir
-        XLSX.writeFile(wb, `${plate}_Montaj_Programi_${date}.xlsx`);
-    }
-
-    // Navigasyon Rota Linkleri
-    function openNav(type) {
-        const addresses = [];
-        document.querySelectorAll('#tableBody tr').forEach(tr => {
-            const addr = tr.querySelectorAll('input')[3].value;
-            if (addr.trim() !== '') addresses.push(encodeURIComponent(addr));
-        });
-
-        if (addresses.length === 0) {
-            alert("Lütfen önce adres alanlarını doldurun!");
-            return;
-        }
-
-        let url = "";
-        if (type === 'google') {
-            url = `https://www.google.com/maps/dir/${addresses.join('/')}`;
-        } else if (type === 'yandex') {
-            url = `https://yandex.com.tr/harita/?rtext=${addresses.join('~')}&rtt=auto`;
-        }
-
-        window.open(url, '_blank');
-    }
-
-    // Adres Geocoding (Harita İğnesi)
-    function geocodeRow(input) {
-        const address = input.value;
+        const address = input.value.trim();
         if (!address) return;
 
         fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(address)}&maxLocations=1`)
