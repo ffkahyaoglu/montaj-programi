@@ -1002,7 +1002,7 @@
             <td><input type="text" class="cell-input cell-address" value="${data.address || ''}" placeholder="Adres" onchange="updateFullMapRoute()"></td>
             <td><input type="text" class="cell-input" value="${data.desc || ''}" placeholder="Açıklama"></td>
             <td><input type="text" class="cell-input" value="${data.rtt || ''}" placeholder="RTT"></td>
-            <td><input type="text" class="cell-input" value="${salesRepValue}" ${isSalesDisabled}></td>
+            <td><input type="text" class="cell-input cell-salesrep" value="${salesRepValue}" ${isSalesDisabled}></td>
             <td><input type="text" class="cell-input" value="${data.status || ''}" placeholder="Durum"></td>
             <td><button class="btn-action-icon" onclick="sendCustomerWA(this)" title="WhatsApp">💬</button></td>
             <td>
@@ -1035,11 +1035,21 @@
         else alert("⚠️ Lütfen bir telefon numarası girin!");
     }
 
+    // YETKİLİ SİLME MOTORU (KULLANICI BAZLI KİLİT)
     function deleteRow(btn) {
-        btn.closest('tr').remove();
-        reindexRows();
-        updateRowCount();
-        updateFullMapRoute();
+        const tr = btn.closest('tr');
+        const salesRepInput = tr.querySelector('.cell-salesrep');
+        const salesRepName = salesRepInput ? salesRepInput.value.trim() : '';
+
+        // Yetki Kontrolü: Furkan (Admin) herkesinkini, diğerleri sadece kendisininkini silebilir
+        if (currentUser.isAdmin || salesRepName.toLowerCase() === currentUser.name.toLowerCase()) {
+            tr.remove();
+            reindexRows();
+            updateRowCount();
+            updateFullMapRoute();
+        } else {
+            alert(`⚠️ Sadece kendi eklediğiniz müşterileri silebilirsiniz!\n\nBu müşteri (${salesRepName}) Temsilcisine aittir.`);
+        }
     }
 
     function reindexRows() {
@@ -1054,7 +1064,6 @@
         document.getElementById('capacityPercent').innerText = `${Math.round((count / MAX_CAPACITY) * 100)}%`;
     }
 
-    /* AKILLI OTOMATİK ROTA İYİLEŞTİRME & MESAFE MOTORU */
     async function updateFullMapRoute() {
         if (!map) return;
         markersGroup.clearLayers();
@@ -1063,8 +1072,7 @@
         const config = cityConfigs[currentCity];
         const routePoints = [config.latLng];
 
-        // Depo İkonu (Çıkış Noktası)
-        const depotMarker = L.marker(config.latLng).addTo(markersGroup)
+        L.marker(config.latLng).addTo(markersGroup)
             .bindPopup(`<b>📍 ÇIKIŞ DEPOSU</b><br>${config.depot}`);
 
         const rows = Array.from(document.querySelectorAll('#tableBody tr'));
@@ -1094,7 +1102,6 @@
         document.getElementById('statStops').innerText = stopsCount;
 
         if (routePoints.length > 1) {
-            // Rota Çizgisi Çiz (Altın/Bronz Lüks Çizgi)
             routeLine = L.polyline(routePoints, {
                 color: '#d4af37',
                 weight: 4,
@@ -1104,7 +1111,6 @@
 
             map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
 
-            // Kuş Uçuşu + Karayolu Katsayısı Mesafesi Hesapla
             let totalKm = 0;
             for (let j = 0; j < routePoints.length - 1; j++) {
                 const p1 = L.latLng(routePoints[j]);
@@ -1112,8 +1118,8 @@
                 totalKm += p1.distanceTo(p2) / 1000;
             }
 
-            const estimatedRoadKm = Math.round(totalKm * 1.3); // Karayolu Çarpanı
-            const estimatedDurationMin = Math.round(estimatedRoadKm * 1.8); // Şehir içi sürüş süresi tahmini
+            const estimatedRoadKm = Math.round(totalKm * 1.3);
+            const estimatedDurationMin = Math.round(estimatedRoadKm * 1.8);
 
             document.getElementById('statDistance').innerText = `${estimatedRoadKm} km`;
             document.getElementById('statDuration').innerText = estimatedDurationMin > 60 ? 
