@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anadolu Araç Yükleme ve Montaj Rota Planlayıcı</title>
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; padding: 15px; background-color: #f1f5f9; color: #1e293b; }
+        
+        .header-title { background: linear-gradient(90deg, #0284c7, #0369a1); color: white; text-align: center; padding: 12px; font-weight: bold; font-size: 20px; border-radius: 8px 8px 0 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .top-info-bar { display: flex; gap: 15px; background: white; padding: 15px; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .info-group { display: flex; flex-direction: column; flex: 1; min-width: 150px; }
+        .info-group label { font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 4px; text-transform: uppercase; }
+        .info-group input { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; color: #0f172a; }
+        
+        .main-container { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+        .table-container { flex: 3; min-width: 700px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow-x: auto; }
+        .map-container { flex: 2; min-width: 380px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        th, td { border: 1px solid #cbd5e1; padding: 5px; text-align: center; }
+        th { background-color: #f8fafc; color: #334155; font-weight: bold; }
+        td input, td select { width: 100%; border: none; background: transparent; font-size: 11px; padding: 3px; border-radius: 3px; }
+        td input:focus, td select:focus { outline: 2px solid #0284c7; background: white; }
+        
+        .customer-col { background-color: #fef08a; font-weight: bold; }
+        
+        .btn-group { display: flex; gap: 8px; margin-top: 10px; }
+        .btn { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 5px; justify-content: center; }
+        .btn-add { background-color: #16a34a; color: white; }
+        .btn-add:hover { background-color: #15803d; }
+        .btn-route { background-color: #0284c7; color: white; width: 100%; padding: 12px; font-size: 14px; margin-top: 10px; }
+        .btn-route:hover { background-color: #0369a1; }
+        .btn-gmaps { background-color: #ea4335; color: white; flex: 1; }
+        .btn-yandex { background-color: #ffcc00; color: #000; flex: 1; }
+        .btn-delete { background-color: #ef4444; color: white; border-radius: 4px; padding: 3px 8px; cursor: pointer; }
+        .btn-move { background-color: #94a3b8; color: white; padding: 2px 5px; cursor: pointer; border-radius: 3px; }
+        
+        #map { height: 420px; width: 100%; border-radius: 6px; margin-top: 10px; border: 1px solid #e2e8f0; }
+        
+        .summary-bar { margin-top: 15px; padding: 10px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; display: flex; gap: 20px; font-weight: bold; font-size: 12px; color: #334155; }
+        .summary-item span { color: #0284c7; }
+        
+        .number-icon {
+            background-color: #0284c7;
+            color: white;
+            border-radius: 50%;
+            border: 2px solid white;
+            font-weight: bold;
+            text-align: center;
+            line-height: 24px;
+            font-size: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-title" id="headerTitle">06 CHA 799_Anadolu Araç Yükleme Tablosu</div>
+    
+    <div class="top-info-bar">
+        <div class="info-group">
+            <label>Araç Plaka No</label>
+            <input type="text" id="plaka" value="06 CHA 799" onchange="updateTitle()">
+        </div>
+        <div class="info-group">
+            <label>Takım Lideri (Ad/Soyad)</label>
+            <input type="text" id="lider" value="Ahmet Yılmaz">
+        </div>
+        <div class="info-group">
+            <label>Takım Üyesi (Ad/Soyad)</label>
+            <input type="text" id="uye" value="Mehmet Kaya">
+        </div>
+        <div class="info-group">
+            <label>Tarih</label>
+            <input type="date" id="tarih">
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Tablo Alanı -->
+        <div class="table-container">
+            <table id="programTable">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">Sıra</th>
+                        <th>Sipariş No</th>
+                        <th>Telefon</th>
+                        <th style="background-color: #fef08a; color: #854d0e;">Müşteri Adı</th>
+                        <th>Saat</th>
+                        <th>Stok Kodu</th>
+                        <th>Stok Adı</th>
+                        <th>Konfig Kod</th>
+                        <th>Konfig</th>
+                        <th>Miktar</th>
+                        <th>Paket</th>
+                        <th>Hacim</th>
+                        <th style="min-width: 140px;">Adres (İlçe/Mahalle/Sokak)</th>
+                        <th>Açıklama</th>
+                        <th>RTT</th>
+                        <th>Satış Temsilcisi</th>
+                        <th>Durum</th>
+                        <th style="width: 60px;">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td>
+                            <button class="btn-move" onclick="moveRow(this, -1)">▲</button>
+                            <button class="btn-move" onclick="moveRow(this, 1)">▼</button>
+                        </td>
+                        <td><input type="text" value="1001"></td>
+                        <td><input type="text" value="0532 000 0000"></td>
+                        <td class="customer-col"><input type="text" value="Ali Demir"></td>
+                        <td><input type="text" value="09:00"></td>
+                        <td><input type="text" value="STK01"></td>
+                        <td><input type="text" value="Koltuk Takımı"></td>
+                        <td><input type="text" value="KNF01"></td>
+                        <td><input type="text" value="Gri"></td>
+                        <td><input type="number" class="qty-input" value="1" onchange="calculateTotals()"></td>
+                        <td><input type="number" class="pkg-input" value="3" onchange="calculateTotals()"></td>
+                        <td><input type="text" class="vol-input" value="2.5" onchange="calculateTotals()"></td>
+                        <td><input type="text" class="address-input" value="Kızılay, Çankaya, Ankara"></td>
+                        <td><input type="text" value="Asansör var"></td>
+                        <td><input type="text" value="-"></td>
+                        <td><input type="text" value="Canan Y."></td>
+                        <td>
+                            <select onchange="calculateTotals()">
+                                <option>Hazırlanıyor</option>
+                                <option>Yolda</option>
+                                <option>Tamamlandı</option>
+                            </select>
+                        </td>
+                        <td><button class="btn-delete" onclick="deleteRow(this)">X</button></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button class="btn-move" onclick="moveRow(this, -1)">▲</button>
+                            <button class="btn-move" onclick="moveRow(this, 1)">▼</button>
+                        </td>
+                        <td><input type="text" value="1002"></td>
+                        <td><input type="text" value="0533 000 0000"></td>
+                        <td class="customer-col"><input type="text" value="Ayşe Yılmaz"></td>
+                        <td><input type="text" value="11:00"></td>
+                        <td><input type="text" value="STK02"></td>
+                        <td><input type="text" value="Yemek Masası"></td>
+                        <td><input type="text" value="KNF02"></td>
+                        <td><input type="text" value="Ahşap"></td>
+                        <td><input type="number" class="qty-input" value="1" onchange="calculateTotals()"></td>
+                        <td><input type="number" class="pkg-input" value="1" onchange="calculateTotals()"></td>
+                        <td><input type="text" class="vol-input" value="1.0" onchange="calculateTotals()"></td>
+                        <td><input type="text" class="address-input" value="Batikent, Yenimahalle, Ankara"></td>
+                        <td><input type="text" value="Zil arızalı"></td>
+                        <td><input type="text" value="-"></td>
+                        <td><input type="text" value="Murat K."></td>
+                        <td>
+                            <select onchange="calculateTotals()">
+                                <option>Hazırlanıyor</option>
+                                <option>Yolda</option>
+                                <option>Tamamlandı</option>
+                            </select>
+                        </td>
+                        <td><button class="btn-delete" onclick="deleteRow(this)">X</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                <button class="btn btn-add" onclick="addRow()">+ Yeni Müşteri / Sipariş Ekle</button>
+            </div>
+
+            <div class="summary-bar">
+                <div class="summary-item">Toplam Sipariş: <span id="totalOrders">2</span></div>
+                <div class="summary-item">Toplam Miktar: <span id="totalQty">2</span></div>
+                <div class="summary-item">Toplam Paket: <span id="totalPkg">4</span></div>
+                <div class="summary-item">Toplam Hacim: <span id="totalVol">3.5</span> m³</div>
+            </div>
+        </div>
+
+        <!-- Harita Alanı -->
+        <div class="map-container">
+            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #0f172a;">Günlük Montaj Rotası</h3>
+            <button class="btn btn-route" onclick="plotRoute()">Haritada Göster ve Rotala</button>
+            
+            <div class="btn-group">
+                <button class="btn btn-gmaps" onclick="openNav('gmaps')"> Google Maps'te Aç</button>
+                <button class="btn btn-yandex" onclick="openNav('yandex')"> Yandex Navigasyon</button>
+            </div>
+
+            <div id="map"></div>
+            <div id="statusMessage" style="margin-top: 8px; font-size: 11px; color: #64748b;"></div>
+        </div>
+    </div>
+
+    <script>
+        var map = L.map('map').setView([39.9334, 32.8597], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var markers = [];
+        var routeLine = null;
+
+        function updateTitle() {
+            var plaka = document.getElementById('plaka').value;
+            document.getElementById('headerTitle').innerText = plaka + "_Anadolu Araç Yükleme Tablosu";
+        }
+
+        function addRow() {
+            var tbody = document.getElementById('tableBody');
+            var newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>
+                    <button class="btn-move" onclick="moveRow(this, -1)">▲</button>
+                    <button class="btn-move" onclick="moveRow(this, 1)">▼</button>
+                </td>
+                <td><input type="text"></td>
+                <td><input type="text"></td>
+                <td class="customer-col"><input type="text"></td>
+                <td><input type="text"></td>
+                <td><input type="text"></td>
+                <td><input type="text"></td>
+                <td><input type="text"></td>
+                <td><input type="text"></td>
+                <td><input type="number" class="qty-input" value="1" onchange="calculateTotals()"></td>
+                <td><input type="number" class="pkg-input" value="1" onchange="calculateTotals()"></td>
+                <td><input type="text" class="vol-input" value="0.5" onchange="calculateTotals()"></td>
+                <td><input type="text" class="address-input" placeholder="Örn: Kadıköy, İstanbul"></td>
+                <td><input type="text"></td>
+                <td><input type="text"></td>
+                <td><input type="text"></td>
+                <td>
+                    <select onchange="calculateTotals()">
+                        <option>Hazırlanıyor</option>
+                        <option>Yolda</option>
+                        <option>Tamamlandı</option>
+                    </select>
+                </td>
+                <td><button class="btn-delete" onclick="deleteRow(this)">X</button></td>
+            `;
+            tbody.appendChild(newRow);
+            calculateTotals();
+        }
+
+        function deleteRow(btn) {
+            var row = btn.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+            calculateTotals();
+        }
+
+        function moveRow(btn, direction) {
+            var row = btn.parentNode.parentNode;
+            var sibling = direction === -1 ? row.previousElementSibling : row.nextElementSibling;
+            if (sibling) {
+                row.parentNode.insertBefore(direction === -1 ? row : sibling, direction === -1 ? sibling : row);
+            }
+        }
+
+        function calculateTotals() {
+            var rows = document.querySelectorAll('#tableBody tr');
+            var totalOrders = rows.length;
+            var totalQty = 0;
+            var totalPkg = 0;
+            var totalVol = 0;
+
+            rows.forEach(row => {
+                var qty = parseFloat(row.querySelector('.qty-input')?.value) || 0;
+                var pkg = parseFloat(row.querySelector('.pkg-input')?.value) || 0;
+                var vol = parseFloat(row.querySelector('.vol-input')?.value) || 0;
+
+                totalQty += qty;
+                totalPkg += pkg;
+                totalVol += vol;
+            });
+
+            document.getElementById('totalOrders').innerText = totalOrders;
+            document.getElementById('totalQty').innerText = totalQty;
+            document.getElementById('totalPkg').innerText = totalPkg;
+            document.getElementById('totalVol').innerText = totalVol.toFixed(1);
+        }
+
+        // Engellere takılmayan ArcGIS Geocoding Servisi
+        async function geocodeAddress(address) {
+            try {
+                let response = await fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(address)}&maxLocations=1`);
+                let data = await response.json();
+                if (data && data.candidates && data.candidates.length > 0) {
+                    let location = data.candidates[0].location;
+                    return [location.y, location.x];
+                }
+            } catch (e) {
+                console.error("ArcGIS Hata:", e);
+            }
+            return null;
+        }
+
+        async function plotRoute() {
+            var statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerText = "Adresler haritada aranıyor...";
+
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            if (routeLine) map.removeLayer(routeLine);
+
+            var addressInputs = document.querySelectorAll('.address-input');
+            var coordinates = [];
+            var foundCount = 0;
+
+            for (let i = 0; i < addressInputs.length; i++) {
+                let address = addressInputs[i].value.trim();
+                if (address) {
+                    let coords = await geocodeAddress(address);
+                    if (coords) {
+                        coordinates.push(coords);
+                        foundCount++;
+
+                        let numberIcon = L.divIcon({
+                            className: 'custom-div-icon',
+                            html: `<div class="number-icon">${i + 1}</div>`,
+                            iconSize: [24, 24],
+                            iconAnchor: [12, 12]
+                        });
+
+                        let marker = L.marker(coords, { icon: numberIcon }).addTo(map)
+                            .bindPopup(`<b>Durak ${i + 1}</b><br>${address}`);
+                        markers.push(marker);
+                    }
+                }
+            }
+
+            if (coordinates.length > 0) {
+                routeLine = L.polyline(coordinates, { color: '#0284c7', weight: 4, opacity: 0.8, dashArray: '8, 8' }).addTo(map);
+                map.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
+                statusDiv.innerText = `${foundCount} adet adres başarıyla rotalandı.`;
+            } else {
+                statusDiv.innerText = "Lütfen geçerli adresler giriniz.";
+            }
+        }
+
+        function openNav(type) {
+            var addressInputs = document.querySelectorAll('.address-input');
+            var addresses = [];
+
+            addressInputs.forEach(input => {
+                let val = input.value.trim();
+                if (val) addresses.push(val);
+            });
+
+            if (addresses.length === 0) {
+                alert("Lütfen en az bir adres giriniz!");
+                return;
+            }
+
+            if (type === 'gmaps') {
+                let origin = encodeURIComponent(addresses[0]);
+                let destination = encodeURIComponent(addresses[addresses.length - 1]);
+                let waypoints = addresses.slice(1, -1).map(a => encodeURIComponent(a)).join('|');
+                
+                let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
+                if (waypoints) url += `&waypoints=${waypoints}`;
+                
+                window.open(url, '_blank');
+            } else if (type === 'yandex') {
+                let query = addresses.map(a => encodeURIComponent(a)).join('~');
+                let url = `https://yandex.com.tr/maps/?rtext=${query}&rtt=auto`;
+                window.open(url, '_blank');
+            }
+        }
+
+        document.getElementById('tarih').valueAsDate = new Date();
+        calculateTotals();
+    </script>
+</body>
+</html>
