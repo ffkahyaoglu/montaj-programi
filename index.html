@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anadolu Araç Yükleme & Montaj Programı (Faz 1.1 - Tam Sütunlu)</title>
+    <title>Anadolu Araç Yükleme & Montaj Programı (Faz 2)</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- SheetJS (Excel Çıktısı İçin) -->
@@ -11,15 +11,18 @@
     <style>
         :root {
             --primary: #1e3a8a;
-            --primary-light: #3b82f6;
+            --primary-light: #2563eb;
             --secondary: #f59e0b;
-            --bg: #f8fafc;
-            --text: #1e293b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #0f172a;
             --border: #cbd5e1;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
@@ -31,7 +34,7 @@
             margin: 0 auto;
         }
 
-        /* Üst Bar: Oturum & Kayıt Takibi */
+        /* Üst Bar: Oturum Bilgisi */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -39,48 +42,62 @@
             background: #0f172a;
             color: white;
             padding: 10px 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             margin-bottom: 15px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
 
         .user-badge {
             background: #22c55e;
             color: black;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 0.8rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
         }
 
         /* Başlık Kartı */
         .header-card {
-            background: var(--primary);
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
             color: white;
-            padding: 15px 20px;
-            border-radius: 8px 8px 0 0;
+            padding: 18px 24px;
+            border-radius: 14px 14px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
         }
 
         .header-card h2 {
             margin: 0;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
+            font-weight: 700;
             letter-spacing: 0.5px;
+        }
+
+        .capacity-pill {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         /* Bilgi Form Kartı */
         .info-card {
-            background: #e2e8f0;
-            padding: 15px 20px;
+            background: var(--card-bg);
+            padding: 16px 24px;
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 18px;
             align-items: center;
-            border-bottom: 2px solid #94a3b8;
+            border-bottom: 2px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
         .info-group {
@@ -90,22 +107,29 @@
         }
 
         .info-group label {
-            font-weight: bold;
+            font-weight: 700;
             font-size: 0.85rem;
-            color: #0f172a;
+            color: #334155;
         }
 
         .info-group input {
-            padding: 6px 10px;
-            border: 1px solid #94a3b8;
-            border-radius: 4px;
+            padding: 7px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
             font-weight: 600;
+            font-size: 0.85rem;
+            transition: border-color 0.2s;
         }
 
-        /* Aksiyon Butonları */
+        .info-group input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+        }
+
+        /* Aksiyon Butonları Barı */
         .action-bar {
             background: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
@@ -113,26 +137,33 @@
         }
 
         .btn {
-            padding: 8px 14px;
+            padding: 9px 16px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
             font-size: 0.85rem;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
         .btn-primary { background: var(--primary-light); color: white; }
         .btn-success { background: #16a34a; color: white; }
+        .btn-whatsapp { background: #25D366; color: white; font-weight: 700; }
         .btn-excel { background: #15803d; color: white; }
-        .btn-warning { background: var(--secondary); color: black; }
-        .btn-danger { background: #dc2626; color: white; }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-warning { background: var(--secondary); color: #0f172a; }
+        .btn-danger { background: var(--danger); color: white; }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            opacity: 0.95;
+        }
 
-        /* Ana Düzen (Tablo ve Harita) */
+        /* Ana Düzen */
         .main-layout {
             display: grid;
             grid-template-columns: 1fr 380px;
@@ -144,12 +175,13 @@
             .main-layout { grid-template-columns: 1fr; }
         }
 
-        /* Genişletilmiş Tablo Tasarımı */
+        /* Tablo Tasarımı */
         .table-container {
             background: white;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow-x: auto;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
         }
 
         table {
@@ -162,43 +194,86 @@
         th {
             background: #0f172a;
             color: white;
-            padding: 10px 6px;
+            padding: 12px 8px;
             text-align: left;
             font-weight: 600;
             font-size: 0.75rem;
+            letter-spacing: 0.3px;
         }
 
         td {
-            padding: 4px 6px;
-            border-bottom: 1px solid var(--border);
+            padding: 6px 8px;
+            border-bottom: 1px solid #f1f5f9;
             vertical-align: middle;
         }
 
         tr:nth-child(even) { background-color: #f8fafc; }
+        tr:hover { background-color: #f1f5f9; }
 
         input.cell-input {
             width: 100%;
             min-width: 80px;
-            padding: 5px;
+            padding: 6px 8px;
             border: 1px solid #cbd5e1;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 0.8rem;
             box-sizing: border-box;
+            transition: all 0.2s;
+        }
+
+        input.cell-input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            background-color: #fff;
         }
 
         input.cell-customer {
-            background-color: #fef08a; /* Sarı Vurgu */
-            font-weight: bold;
+            background-color: #fef08a;
+            font-weight: 700;
             color: #0f172a;
+        }
+
+        /* Telefon Linki Görünümü */
+        .phone-cell-wrap {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-call {
+            background: #e2e8f0;
+            color: #0f172a;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .btn-call:hover {
+            background: #cbd5e1;
+        }
+
+        /* Satır WhatsApp İkon Butonu */
+        .btn-row-wa {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: bold;
         }
 
         /* Harita Kartı */
         .map-card {
             background: white;
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            height: 550px;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            height: 560px;
             position: sticky;
             top: 15px;
         }
@@ -206,14 +281,14 @@
         #map {
             width: 100%;
             height: 100%;
-            border-radius: 6px;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- Üst Bar: Oturum & Kayıt Takibi -->
+    <!-- Üst Bar: Oturum & Takip -->
     <div class="top-bar">
         <div>
             <span>🔐 Oturum: <strong>Operasyon Yöneticisi</strong></span>
@@ -228,8 +303,8 @@
     <div class="header-card">
         <h2 id="displayTitle">ANADOLU ARAÇ YÜKLEME VE MONTAJ PROGRAMI</h2>
         <div>
-            <span style="font-size:0.85rem; background:rgba(255,255,255,0.2); padding:4px 10px; border-radius:12px;">
-                Müşteri Kapasitesi: <strong id="rowCountDisplay">0</strong> / 7
+            <span class="capacity-pill">
+                📊 Doluluk: <strong id="rowCountDisplay">0</strong> / 7 Müşteri (<span id="capacityPercent">0%</span>)
             </span>
         </div>
     </div>
@@ -254,10 +329,11 @@
         </div>
     </div>
 
-    <!-- Aksiyon Butonları -->
+    <!-- Aksiyon Butonları Barı -->
     <div class="action-bar">
         <button class="btn btn-primary" onclick="addRow()">➕ Yeni Müşteri Ekle</button>
         <button class="btn btn-success" onclick="saveToCloud()">☁️ Günü Kaydet</button>
+        <button class="btn btn-whatsapp" onclick="shareRouteWhatsApp()">📲 WhatsApp Rota Paylaş</button>
         <button class="btn btn-excel" onclick="exportToExcel()">📊 Excel (XLSX) İndir</button>
         <button class="btn btn-warning" onclick="openNav('google')">🗺️ Google Rota</button>
         <button class="btn btn-warning" onclick="openNav('yandex')">🟡 Yandex Rota</button>
@@ -265,14 +341,14 @@
 
     <!-- Ana İçerik -->
     <div class="main-layout">
-        <!-- İstenen Tüm Sütun Başlıklarını İçeren Tablo -->
+        <!-- Tablo -->
         <div class="table-container">
             <table id="programTable">
                 <thead>
                     <tr>
                         <th style="width: 25px;">#</th>
                         <th style="min-width: 90px;">Sipariş No</th>
-                        <th style="min-width: 110px;">Telefon</th>
+                        <th style="min-width: 120px;">Telefon</th>
                         <th style="min-width: 140px;">Müşteri Adı</th>
                         <th style="min-width: 70px;">Saat</th>
                         <th style="min-width: 90px;">Stok Kodu</th>
@@ -287,6 +363,7 @@
                         <th style="min-width: 70px;">RTT</th>
                         <th style="min-width: 120px;">Satış Temsilcisi</th>
                         <th style="min-width: 90px;">Durum</th>
+                        <th style="width: 40px;">Bilgi</th>
                         <th style="width: 30px;">Sil</th>
                     </tr>
                 </thead>
@@ -308,27 +385,22 @@
 
 <script>
     let map, markers = [];
-    const MAX_CAPACITY = 7; // KESİN 7 MÜŞTERİ SINIRI
+    const MAX_CAPACITY = 7;
 
     window.onload = function() {
         initMap();
-        
-        // Bugünün Tarihini Varsayılan Yap
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('dateInput').value = today;
-
-        // Başlangıçta 1 Tane Boş Müşteri Satırı Ekle
         addRow();
     };
 
     function initMap() {
-        map = L.map('map').setView([39.9334, 32.8597], 10); // Ankara
+        map = L.map('map').setView([39.9334, 32.8597], 10);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
         }).addTo(map);
     }
 
-    // Plaka Girildikçe Başlığı Güncelle
     function updateTitle() {
         const plate = document.getElementById('plateInput').value.trim();
         const titleElem = document.getElementById('displayTitle');
@@ -339,12 +411,10 @@
         }
     }
 
-    // KESİN 7 SATIR SINIRLI VE 16 SÜTUNLU MÜŞTERİ EKLEME
     function addRow(data = {}) {
         const tbody = document.getElementById('tableBody');
         const currentCount = tbody.getElementsByTagName('tr').length;
 
-        // 7 MÜŞTERİ ENGELİ
         if (currentCount >= MAX_CAPACITY) {
             alert(`⚠️ Araç Yükleme Kapasite Sınırı (7 Müşteri) Doldu!\n\nYeni sipariş eklemek için lütfen mevcut satırlardan birini silin.`);
             return;
@@ -354,7 +424,12 @@
         tr.innerHTML = `
             <td><strong>${currentCount + 1}</strong></td>
             <td><input type="text" class="cell-input" value="${data.orderNo || ''}" placeholder="Sipariş No"></td>
-            <td><input type="text" class="cell-input" value="${data.phone || ''}" placeholder="Telefon"></td>
+            <td>
+                <div class="phone-cell-wrap">
+                    <input type="text" class="cell-input phone-input" value="${data.phone || ''}" placeholder="05XX XXX XX XX">
+                    <a href="javascript:void(0)" onclick="makeCall(this)" class="btn-call" title="Ara">📞</a>
+                </div>
+            </td>
             <td><input type="text" class="cell-input cell-customer" value="${data.customer || ''}" placeholder="Müşteri Adı"></td>
             <td><input type="text" class="cell-input" value="${data.time || ''}" placeholder="Saat"></td>
             <td><input type="text" class="cell-input" value="${data.stockCode || ''}" placeholder="Stok Kodu"></td>
@@ -369,6 +444,7 @@
             <td><input type="text" class="cell-input" value="${data.rtt || ''}" placeholder="RTT"></td>
             <td><input type="text" class="cell-input" value="${data.salesRep || ''}" placeholder="Satış Temsilcisi"></td>
             <td><input type="text" class="cell-input" value="${data.status || ''}" placeholder="Durum"></td>
+            <td><button class="btn-row-wa" onclick="sendCustomerWA(this)" title="Müşteriye Mesaj Gönder">💬</button></td>
             <td><button class="btn btn-danger" style="padding: 2px 6px;" onclick="deleteRow(this)">X</button></td>
         `;
 
@@ -376,27 +452,84 @@
         updateRowCount();
     }
 
-    // Satır Sil
     function deleteRow(btn) {
         btn.closest('tr').remove();
         reindexRows();
         updateRowCount();
     }
 
-    // Numaraları Yeniden Sırala
     function reindexRows() {
         document.querySelectorAll('#tableBody tr').forEach((tr, index) => {
             tr.cells[0].innerHTML = `<strong>${index + 1}</strong>`;
         });
     }
 
-    // Sayaç Güncelle
     function updateRowCount() {
         const count = document.querySelectorAll('#tableBody tr').length;
         document.getElementById('rowCountDisplay').innerText = count;
+        const percent = Math.round((count / MAX_CAPACITY) * 100);
+        document.getElementById('capacityPercent').innerText = `${percent}%`;
     }
 
-    // Tarih Değiştiğinde Kayıt Kontrolü
+    // Telefon Arama Tetikleyici
+    function makeCall(btn) {
+        const phoneInput = btn.previousElementSibling.value.trim();
+        if (phoneInput) {
+            window.location.href = `tel:${phoneInput}`;
+        } else {
+            alert("⚠️ Lütfen önce bir telefon numarası girin!");
+        }
+    }
+
+    // MÜŞTERİYE ÖZEL WHATSAPP MESAJI
+    function sendCustomerWA(btn) {
+        const tr = btn.closest('tr');
+        const inputs = tr.querySelectorAll('input');
+        
+        const phone = inputs[1].value.trim().replace(/\s+/g, '');
+        const customer = inputs[2].value.trim();
+        const plate = document.getElementById('plateInput').value.trim() || 'Montaj Aracımız';
+        const leader = document.getElementById('leaderInput').value.trim() || 'Ekip Sorumlumuz';
+
+        if (!phone) {
+            alert("⚠️ Lütfen müşterinin telefon numarasını girin!");
+            return;
+        }
+
+        const text = `Sayın *${customer || 'Müşterimiz'}*,\n\n${plate} plakalı montaj aracımız ürün teslimatınız için yola çıkmıştır.\n\nTakım Lideri: ${leader}\nİyi günler dileriz.`;
+        window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    // ŞOFÖR / EKİP İÇİN TÜM ROTA WHATSAPP PAYLAŞIMI
+    function shareRouteWhatsApp() {
+        const plate = document.getElementById('plateInput').value || 'PLAKASIZ';
+        const date = document.getElementById('dateInput').value;
+        const leader = document.getElementById('leaderInput').value;
+
+        let text = `🚚 *GÜNLÜK MONTAJ PROGRAMI*\n📅 *Tarih:* ${date}\n🚛 *Plaka:* ${plate}\n👤 *Takım Lideri:* ${leader}\n-----------------------------------\n`;
+
+        let count = 0;
+        document.querySelectorAll('#tableBody tr').forEach((tr, index) => {
+            const inputs = tr.querySelectorAll('input');
+            const customer = inputs[2].value.trim();
+            const phone = inputs[1].value.trim();
+            const address = inputs[11].value.trim();
+            const desc = inputs[12].value.trim();
+
+            if (customer || address) {
+                count++;
+                text += `\n*${index + 1}. ${customer}*\n📞 Tel: ${phone}\n📍 Adres: ${address}\n📝 Not: ${desc}\n`;
+            }
+        });
+
+        if (count === 0) {
+            alert("⚠️ Gönderilecek kayıtlı müşteri bulunamadı!");
+            return;
+        }
+
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
     function handleDateChange() {
         const selectedDate = document.getElementById('dateInput').value;
         const savedData = localStorage.getItem(`montaj_${selectedDate}`);
@@ -419,11 +552,10 @@
         } else {
             document.getElementById('plateInput').value = '';
             updateTitle();
-            addRow(); // Kayıt yoksa 1 boş satır aç
+            addRow();
         }
     }
 
-    // Kaydet
     function saveToCloud() {
         const selectedDate = document.getElementById('dateInput').value;
         const rows = [];
@@ -464,7 +596,6 @@
         alert(`✅ ${selectedDate} tarihli program başarıyla kaydedildi!`);
     }
 
-    // İSTENEN TÜM SÜTUNLARI İÇEREN EXCEL (XLSX) DIŞA AKTARIMI
     function exportToExcel() {
         const plate = document.getElementById('plateInput').value || 'PLAKASIZ';
         const date = document.getElementById('dateInput').value;
@@ -513,12 +644,11 @@
         XLSX.writeFile(wb, `${plate}_Montaj_Programi_${date}.xlsx`);
     }
 
-    // GOOGLE & YANDEX ROTA BUTONLARI
     function openNav(type) {
         const addresses = [];
         document.querySelectorAll('#tableBody tr').forEach(tr => {
             const inputs = tr.querySelectorAll('input');
-            const addr = inputs[11].value.trim(); // Adres sütunu (11. index)
+            const addr = inputs[11].value.trim();
             if (addr !== '') addresses.push(encodeURIComponent(addr));
         });
 
@@ -541,7 +671,6 @@
         window.open(url, '_blank');
     }
 
-    // Harita Geocoding
     function geocodeRow(input) {
         const address = input.value.trim();
         if (!address) return;
