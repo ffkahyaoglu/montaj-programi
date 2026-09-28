@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anadolu Araç Yükleme & Montaj Platformu (Faz 3 - Tam Sürüm)</title>
+    <title>Anadolu Araç Yükleme & Montaj Platformu</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- SheetJS (Excel Çıktısı İçin) -->
@@ -26,15 +26,70 @@
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
-            padding: 15px;
+            padding: 0;
         }
 
-        .container {
+        /* LOGIN EKRANI OVERLAY */
+        #loginOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+        }
+
+        .login-box {
+            background: white;
+            padding: 35px 30px;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 380px;
+            text-align: center;
+        }
+
+        .login-box h3 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-light);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .login-btn:hover { background: var(--primary); }
+
+        .app-container {
+            padding: 15px;
             max-width: 100%;
             margin: 0 auto;
+            display: none;
         }
 
-        /* Üst Bar: Oturum & Canlı Hava Durumu */
+        /* Üst Bar: Oturum & Hava Durumu */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -69,7 +124,7 @@
             gap: 6px;
         }
 
-        /* Dashboard & Başlık Kartı */
+        /* Başlık Kartı */
         .header-card {
             background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
             color: white;
@@ -82,11 +137,7 @@
             gap: 12px;
         }
 
-        .header-card h2 {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
+        .header-card h2 { margin: 0; font-size: 1.25rem; font-weight: 700; }
 
         .capacity-pill {
             background: rgba(255, 255, 255, 0.15);
@@ -97,7 +148,6 @@
             border: 1px solid rgba(255,255,255,0.2);
         }
 
-        /* Performans Paneli Kartları */
         .analytics-card {
             background: white;
             padding: 15px 24px;
@@ -115,20 +165,9 @@
             text-align: center;
         }
 
-        .stat-box .number {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
+        .stat-box .number { font-size: 1.4rem; font-weight: bold; color: var(--primary); }
+        .stat-box .label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 600; }
 
-        .stat-box .label {
-            font-size: 0.75rem;
-            color: #64748b;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-
-        /* Bilgi Form Kartı */
         .info-card {
             background: var(--card-bg);
             padding: 16px 24px;
@@ -139,27 +178,10 @@
             border-bottom: 2px solid #e2e8f0;
         }
 
-        .info-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .info-group { display: flex; align-items: center; gap: 8px; }
+        .info-group label { font-weight: 700; font-size: 0.85rem; color: #334155; }
+        .info-group input { padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-weight: 600; font-size: 0.85rem; }
 
-        .info-group label {
-            font-weight: 700;
-            font-size: 0.85rem;
-            color: #334155;
-        }
-
-        .info-group input {
-            padding: 7px 12px;
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        /* Aksiyon Butonları */
         .action-bar {
             background: white;
             padding: 12px 24px;
@@ -188,13 +210,8 @@
         .btn-excel { background: #15803d; color: white; }
         .btn-warning { background: var(--secondary); color: #0f172a; }
         .btn-danger { background: var(--danger); color: white; }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            opacity: 0.95;
-        }
+        .btn-logout { background: #64748b; color: white; margin-left: 10px; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; border: none; }
 
-        /* Ana Düzen */
         .main-layout {
             display: grid;
             grid-template-columns: 1fr 380px;
@@ -202,11 +219,8 @@
             margin-top: 15px;
         }
 
-        @media (max-width: 1200px) {
-            .main-layout { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 1200px) { .main-layout { grid-template-columns: 1fr; } }
 
-        /* Tablo Tasarımı */
         .table-container {
             background: white;
             border-radius: 12px;
@@ -215,96 +229,37 @@
             border: 1px solid #e2e8f0;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8rem;
-            white-space: nowrap;
-        }
-
-        th {
-            background: #0f172a;
-            color: white;
-            padding: 12px 8px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.75rem;
-        }
-
-        td {
-            padding: 6px 8px;
-            border-bottom: 1px solid #f1f5f9;
-            vertical-align: middle;
-        }
-
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; white-space: nowrap; }
+        th { background: #0f172a; color: white; padding: 12px 8px; text-align: left; font-weight: 600; font-size: 0.75rem; }
+        td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
         tr:nth-child(even) { background-color: #f8fafc; }
 
         input.cell-input {
-            width: 100%;
-            min-width: 80px;
-            padding: 6px 8px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            box-sizing: border-box;
+            width: 100%; min-width: 80px; padding: 6px 8px;
+            border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.8rem; box-sizing: border-box;
         }
 
-        input.cell-customer {
-            background-color: #fef08a;
-            font-weight: 700;
-            color: #0f172a;
-        }
+        input.cell-customer { background-color: #fef08a; font-weight: 700; color: #0f172a; }
 
         .btn-action-icon {
-            background: #e2e8f0;
-            border: none;
-            padding: 5px 8px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
+            background: #e2e8f0; border: none; padding: 5px 8px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;
         }
 
-        .btn-action-icon:hover { background: #cbd5e1; }
-
-        /* Modal (İmza & Fotoğraf Pop-up) */
         .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(4px);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9999;
+            justify-content: center; align-items: center;
         }
 
         .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 450px;
-            text-align: center;
+            background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 450px; text-align: center;
         }
 
-        #sigCanvas {
-            border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            width: 100%;
-            height: 180px;
-            cursor: crosshair;
-        }
+        #sigCanvas { border: 2px dashed #cbd5e1; border-radius: 8px; width: 100%; height: 180px; cursor: crosshair; }
 
-        /* Harita Kartı */
         .map-card {
-            background: white;
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            border: 1px solid #e2e8f0;
-            height: 580px;
-            position: sticky;
-            top: 15px;
+            background: white; border-radius: 12px; padding: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; height: 580px; position: sticky; top: 15px;
         }
 
         #map { width: 100%; height: 100%; border-radius: 8px; }
@@ -312,12 +267,25 @@
 </head>
 <body>
 
-<div class="container">
+<!-- LOGIN EKRANI OVERLAY -->
+<div id="loginOverlay">
+    <div class="login-box">
+        <h3>🚛 Operasyon Girişi</h3>
+        <p style="font-size:0.8rem; color:#64748b; margin-bottom:15px;">Kullanıcı adı ve şifrenizi giriniz</p>
+        <input type="text" id="loginUser" class="login-input" placeholder="Kullanıcı Adı">
+        <input type="password" id="loginPass" class="login-input" placeholder="Şifre">
+        <button class="login-btn" onclick="checkLogin()">Giriş Yap</button>
+    </div>
+</div>
+
+<!-- ANA UYGULAMA İÇERİĞİ -->
+<div class="app-container" id="appContent">
     <!-- Üst Bar: Oturum & Hava Durumu -->
     <div class="top-bar">
         <div>
-            <span>🔐 Oturum: <strong>Operasyon Yöneticisi</strong></span>
+            <span>🔐 Kullanıcı: <strong id="activeUserDisplay">---</strong></span>
             <span class="user-badge">Aktif</span>
+            <button class="btn-logout" onclick="logout()">Çıkış Yap 🚪</button>
         </div>
         <div class="weather-pill">
             <span>☀️ Ankara Saha Hava Durumu: <strong>22°C (Açık - Montaj İçin Uygun)</strong></span>
@@ -441,17 +409,55 @@
     const MAX_CAPACITY = 7;
     let currentSigRow = null;
 
-    window.onload = function() {
+    // SADECE 4 KULLANICI LİSTESİ (UNVANSIZ)
+    const users = {
+        'furkan': { pass: '1907', name: 'Furkan' },
+        'ecem':   { pass: 'Ecm*9274!p', name: 'Ecem' },
+        'eda':    { pass: 'Eda#8163&k', name: 'Eda' },
+        'talha':  { pass: 'Tlh$4529*m', name: 'Talha' }
+    };
+
+    function checkLogin() {
+        const u = document.getElementById('loginUser').value.trim().toLowerCase();
+        const p = document.getElementById('loginPass').value.trim();
+
+        if (users[u] && users[u].pass === p) {
+            localStorage.setItem('montaj_session', users[u].name);
+            showApp(users[u].name);
+        } else {
+            alert("⚠️ Hatalı Kullanıcı Adı veya Şifre!");
+        }
+    }
+
+    function showApp(userName) {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('appContent').style.display = 'block';
+        document.getElementById('activeUserDisplay').innerText = userName;
+        
         initMap();
         initSignaturePad();
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('dateInput').value = today;
         addRow();
+    }
+
+    function logout() {
+        localStorage.removeItem('montaj_session');
+        window.location.reload();
+    }
+
+    window.onload = function() {
+        const session = localStorage.getItem('montaj_session');
+        if (session) {
+            showApp(session);
+        }
     };
 
     function initMap() {
-        map = L.map('map').setView([39.9334, 32.8597], 10);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+        if (!map) {
+            map = L.map('map').setView([39.9334, 32.8597], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+        }
     }
 
     function updateTitle() {
@@ -517,17 +523,15 @@
         document.getElementById('statTotal').innerText = count;
     }
 
-    /* FOTOĞRAF YÜKLEME MOTORU */
     function handlePhotoUpload(input) {
         if (input.files && input.files[0]) {
-            alert(`✅ Montaj fotoğrafı başarıyla yüklendi: ${input.files[0].name}`);
+            alert(`✅ Montaj fotoğrafı yüklendi: ${input.files[0].name}`);
             input.nextElementSibling.style.background = "#22c55e";
             input.nextElementSibling.style.color = "white";
             updateStats();
         }
     }
 
-    /* DİJİTAL İMZA MOTORU */
     let isDrawing = false, canvas, ctx;
     function initSignaturePad() {
         canvas = document.getElementById('sigCanvas');
@@ -562,7 +566,7 @@
     function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
     function saveSignature() {
-        alert("✅ Müşteri imzası başarıyla kaydedildi!");
+        alert("✅ İmzalandı!");
         if (currentSigRow) {
             currentSigRow.style.background = "#22c55e";
             currentSigRow.style.color = "white";
@@ -588,7 +592,7 @@
         const customer = inputs[2].value.trim();
         const plate = document.getElementById('plateInput').value.trim() || 'Montaj Aracımız';
 
-        if (!phone) { alert("⚠️ Lütfen müşterinin telefon numarasını girin!"); return; }
+        if (!phone) { alert("⚠️ Lütfen telefon numarasını girin!"); return; }
         const text = `Sayın *${customer || 'Müşterimiz'}*,\n\n${plate} plakalı aracımız montajınız için yola çıkmıştır.\nİyi günler dileriz.`;
         window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`, '_blank');
     }
