@@ -320,7 +320,7 @@
             <span class="brand-badge">LAZZONI</span>
             <span>Kullanıcı: <strong id="activeUserDisplay" style="color: var(--rolex-gold);">---</strong></span>
             <span class="city-badge" id="activeCityBadge">ANKARA</span>
-            <span class="sync-status-pill">⚡ Canlı Bulut Senkronize</span>
+            <span class="sync-status-pill">⚡ Bulut & Yerel Aktif</span>
             <button class="btn-change-city" onclick="switchCityHub()">Şehir Değiştir 🔁</button>
             <button class="btn-logout" onclick="logout()">Çıkış 🚪</button>
         </div>
@@ -445,19 +445,21 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    // FIREBASE BİLGİLERİ
+    // YENİ GÜNCEL FIREBASE BİLGİLERİN
     const firebaseConfig = {
-      apiKey: "AIzaSyDOzqQp0QdzsfwKy_NJFcju0a8LBgceNSU",
-      authDomain: "lazzonilojistik.firebaseapp.com",
-      databaseURL: "https://lazzonilojistik-default-rtdb.firebaseio.com",
-      projectId: "lazzonilojistik",
-      storageBucket: "lazzonilojistik.firebasestorage.app",
-      messagingSenderId: "702032694748",
-      appId: "1:702032694748:web:65ea3c6b7b24f75c0b9319",
-      measurementId: "G-E3RZ384JWY"
+      apiKey: "AIzaSyANwum4_yZG_gUJLwvMqfnynzJfWzdAAOs",
+      authDomain: "lazzonilojistik-bbe03.firebaseapp.com",
+      databaseURL: "https://lazzonilojistik-bbe03-default-rtdb.firebaseio.com",
+      projectId: "lazzonilojistik-bbe03",
+      storageBucket: "lazzonilojistik-bbe03.firebasestorage.app",
+      messagingSenderId: "857194866275",
+      appId: "1:857194866275:web:f79128acb955814cbc7a56",
+      measurementId: "G-NLV3490L6R"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    try {
+        firebase.initializeApp(firebaseConfig);
+    } catch(e) {}
     const db = firebase.database();
 
     let map, routeLine = null, markersGroup = null;
@@ -465,7 +467,6 @@
     let currentSigRow = null;
     let currentUser = null;
     let currentCity = 'ankara';
-    let activeListenerRef = null;
 
     const cityConfigs = {
         'ankara': {
@@ -491,9 +492,7 @@
 
     const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
 
-    function handleEnterKey(event) {
-        if (event.key === "Enter") checkLogin();
-    }
+    function handleEnterKey(event) { if (event.key === "Enter") checkLogin(); }
 
     function togglePassView() {
         const input = document.getElementById('loginPass');
@@ -531,17 +530,15 @@
 
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('dateInput').value = today;
-        attachLiveDatabaseListener();
+        loadDataForDate(today);
     }
 
     function switchCityHub() {
-        if (activeListenerRef) activeListenerRef.off();
         document.getElementById('appContent').style.display = 'none';
         document.getElementById('cityHubOverlay').style.display = 'flex';
     }
 
     function logout() {
-        if (activeListenerRef) activeListenerRef.off();
         localStorage.removeItem('montaj_session');
         localStorage.removeItem('montaj_active_city');
         window.location.reload();
@@ -801,50 +798,50 @@
         window.open(url, '_blank');
     }
 
-    /* KESİN TARİH VE ŞEHİR AYRIMLI DİNLENME MOTORU */
-    function attachLiveDatabaseListener() {
-        const selectedDate = document.getElementById('dateInput').value;
+    function loadDataForDate(selectedDate) {
         if (!selectedDate) return;
 
-        // Eski dinleyiciyi durdur
-        if (activeListenerRef) {
-            activeListenerRef.off();
-        }
-
-        // ÖNCE EKRAN VERİLERİNİ TAMAMEN SIFIRLA
         document.getElementById('tableBody').innerHTML = '';
         document.getElementById('plateInput').value = '';
         document.getElementById('leaderInput').value = '';
         document.getElementById('memberInput').value = '';
         updateTitle();
 
-        // SEÇİLİ ŞEHİR VE TARİHE ÖZEL BULUT YOLU
-        const path = `montaj_${currentCity}/${selectedDate}`;
-        activeListenerRef = db.ref(path);
-        
-        activeListenerRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            document.getElementById('tableBody').innerHTML = '';
+        const storageKey = `montaj_${currentCity}_${selectedDate}`;
+        const localSaved = localStorage.getItem(storageKey);
 
-            if (data && data.rows && data.rows.length > 0) {
-                document.getElementById('plateInput').value = data.plate || '';
-                document.getElementById('leaderInput').value = data.leader || '';
-                document.getElementById('memberInput').value = data.member || '';
-                updateTitle();
-                data.rows.forEach(r => addRow(r));
+        if (localSaved) {
+            const parsed = JSON.parse(localSaved);
+            document.getElementById('plateInput').value = parsed.plate || '';
+            document.getElementById('leaderInput').value = parsed.leader || '';
+            document.getElementById('memberInput').value = parsed.member || '';
+            updateTitle();
+            if (parsed.rows && parsed.rows.length > 0) {
+                parsed.rows.forEach(r => addRow(r));
             } else {
-                document.getElementById('plateInput').value = '';
-                document.getElementById('leaderInput').value = '';
-                document.getElementById('memberInput').value = '';
-                updateTitle();
-                addRow(); // Boş gün ise 1 adet varsayılan satır aç
+                addRow();
             }
             updateFullMapRoute();
-        });
+        } else {
+            db.ref(`montaj_${currentCity}/${selectedDate}`).once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.rows && data.rows.length > 0) {
+                    document.getElementById('plateInput').value = data.plate || '';
+                    document.getElementById('leaderInput').value = data.leader || '';
+                    document.getElementById('memberInput').value = data.member || '';
+                    updateTitle();
+                    data.rows.forEach(r => addRow(r));
+                } else {
+                    addRow();
+                }
+                updateFullMapRoute();
+            });
+        }
     }
 
     function handleDateChange() {
-        attachLiveDatabaseListener();
+        const selectedDate = document.getElementById('dateInput').value;
+        loadDataForDate(selectedDate);
     }
 
     function saveToCloud(silent = false) {
@@ -868,12 +865,19 @@
             member: document.getElementById('memberInput').value, date: selectedDate, city: currentCity, rows: rows
         };
 
-        const path = `montaj_${currentCity}/${selectedDate}`;
-        db.ref(path).set(payload);
+        const storageKey = `montaj_${currentCity}_${selectedDate}`;
+        localStorage.setItem(storageKey, JSON.stringify(payload));
+
+        try {
+            db.ref(`montaj_${currentCity}/${selectedDate}`).set(payload);
+        } catch(e) {}
 
         if (!silent) {
-            alert(`✅ ${cityConfigs[currentCity].name} — ${selectedDate} tarihli program başarıyla kaydedildi!`);
+            alert(`✅ ${cityConfigs[currentCity].name} — ${selectedDate} tarihli montaj programı başarıyla kaydedildi!`);
         }
+        
+        const d = new Date(selectedDate);
+        selectMonthFolder(d.getMonth(), monthNames[d.getMonth()]);
     }
 
     function renderMonthFolders() {
@@ -903,28 +907,44 @@
         daysGrid.innerHTML = '';
         container.style.display = 'block';
 
+        let foundDates = new Set();
+
+        const prefix = `montaj_${currentCity}_`;
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith(prefix)) {
+                const dateStr = key.replace(prefix, '');
+                const dateObj = new Date(dateStr);
+                if (dateObj.getMonth() === monthIndex) {
+                    foundDates.add(dateStr);
+                }
+            }
+        }
+
         db.ref(`montaj_${currentCity}`).once('value', (snapshot) => {
             const data = snapshot.val();
-            let found = false;
-
             if (data) {
                 Object.keys(data).forEach(dateStr => {
                     const dateObj = new Date(dateStr);
                     if (dateObj.getMonth() === monthIndex) {
-                        found = true;
-                        const btn = document.createElement('button');
-                        btn.className = 'day-excel-btn';
-                        btn.innerHTML = `📊 ${dateStr}.xlsx`;
-                        btn.onclick = () => {
-                            document.getElementById('dateInput').value = dateStr;
-                            handleDateChange();
-                        };
-                        daysGrid.appendChild(btn);
+                        foundDates.add(dateStr);
                     }
                 });
             }
 
-            if (!found) {
+            daysGrid.innerHTML = '';
+            if (foundDates.size > 0) {
+                Array.from(foundDates).sort().forEach(dateStr => {
+                    const btn = document.createElement('button');
+                    btn.className = 'day-excel-btn';
+                    btn.innerHTML = `📊 ${dateStr}.xlsx`;
+                    btn.onclick = () => {
+                        document.getElementById('dateInput').value = dateStr;
+                        handleDateChange();
+                    };
+                    daysGrid.appendChild(btn);
+                });
+            } else {
                 daysGrid.innerHTML = `<span style="font-size:0.75rem; color:var(--text-muted);">Bu ay için kaydedilmiş gün bulunamadı.</span>`;
             }
         });
